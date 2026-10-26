@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireUser } from "@/lib/page-auth";
 import { getReport } from "@/lib/reports";
-import { ApiError } from "@/lib/http";
+import { ApiError } from "@/lib/http/errors";
 import { db } from "@/lib/db";
-import { PageHeading } from "@/components/ui";
-import { ReportForm } from "@/components/report-form";
+import { PageHeading } from "@/components/ui/page-heading";
+import { ReportForm } from "@/components/reports/report-form";
 import type { ReportView } from "@/types/app";
 export default async function EditReport({
   params,

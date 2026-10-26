@@ -1,14 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    message: string,
-  ) {
-    super(message);
-  }
-}
+import { ApiError } from "./errors";
 export function apiError(error: unknown) {
   if (error instanceof ApiError)
     return NextResponse.json(
@@ -47,9 +40,4 @@ export function apiError(error: unknown) {
     { error: "Unable to complete this request. Please try again." },
     { status: 500 },
   );
-}
-export function checkOrigin(request: Request) {
-  const origin = request.headers.get("origin");
-  if (!origin || origin !== new URL(request.url).origin)
-    throw new ApiError(400, "Request origin could not be verified.");
 }

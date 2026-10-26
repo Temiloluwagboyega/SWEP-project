@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/page-auth";
 import { getReport } from "@/lib/reports";
-import { ApiError } from "@/lib/http";
-import { ReportDetail } from "@/components/report-detail";
+import { ApiError } from "@/lib/http/errors";
+import { ReportDetail } from "@/components/reports/report-detail";
 export default async function Detail({
   params,
   searchParams,

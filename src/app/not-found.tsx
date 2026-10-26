@@ -3,7 +3,7 @@ import { ShieldQuestion } from "lucide-react";
 export default function NotFound() {
   return (
     <div className="shell page-content empty-page">
-      <ShieldQuestion size={46} strokeWidth={1.2} />
+      <ShieldQuestion aria-hidden="true" size={46} strokeWidth={1.2} />
       <div className="eyebrow">404 · NOT FOUND</div>
       <h1>We couldn’t find that page.</h1>
       <p>

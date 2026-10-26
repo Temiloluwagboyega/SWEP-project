@@ -1,3 +1,4 @@
+import { cache } from "react";
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
@@ -46,7 +47,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
-export async function getSessionUser(): Promise<SessionUser | null> {
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const session = await auth();
   if (!session?.user?.id) return null;
   // Re-read authoritative role so account changes cannot leave stale JWT privileges.
@@ -54,4 +55,4 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     where: { id: session.user.id },
     select: { id: true, role: true, name: true, email: true },
   });
-}
+});

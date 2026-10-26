@@ -9,3 +9,6 @@ test-results/
 *.tsbuildinfo
 .DS_Store
 .unlazy/
+__pycache__/
+*.py[cod]
+artifacts/

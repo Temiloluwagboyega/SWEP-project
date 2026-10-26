@@ -9,7 +9,7 @@ export function SignOutButton() {
       aria-label="Sign out"
       title="Sign out"
     >
-      <LogOut size={18} />
+      <LogOut aria-hidden="true" size={18} />
     </button>
   );
 }

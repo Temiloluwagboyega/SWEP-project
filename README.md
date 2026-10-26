@@ -58,12 +58,14 @@ Seed data includes 16 proposed campus locations and 15 fictional reports across 
 ```text
 src/app/                  App Router pages and layouts
 src/app/api/              Node.js API handlers
-src/components/           Forms, queue, report detail, and shared UI
+src/components/           Feature folders: auth, home, layout, reports, staff, ui
 src/lib/access.ts         Role/channel/owner/confidentiality checks and redaction
 src/lib/reports.ts        Transactional report lifecycle services
 src/lib/auth.ts           Authentication and session-user lookup
 src/lib/validation.ts     Shared input schemas
 src/lib/status.ts         Allowed status transitions
+src/lib/http/             Browser requests, backend errors, origin, responses
+src/styles/               Tokens, base, layout, shared components, page styles
 src/config/contacts.ts    Pending/verified contact configuration
 prisma/schema.prisma      Local SQLite schema
 prisma/seed.ts             Non-destructive fictional demo seed
@@ -148,3 +150,7 @@ Before deploying:
 - Per-user server sessions are eight hours. Account recovery, suspension UI, and staff-account management are not in the MVP source.
 
 # SWEP-project
+
+## Design upgrade
+
+See [the design and folder guide](docs/design-upgrade.md), [brand direction](docs/brand-guidelines.md), and [design master](design-system/campusguard/MASTER.md). A standalone, fixture-only component preview is generated at `artifacts/design-preview.html`; it is not the running backend application. The redesign adds reusable UI components, feature folders, an HTTP helper folder, token-based styling, contextual portal navigation, accessible error summaries, and a responsive staff report table. Verification boundaries are recorded in [DESIGN_GATES.md](DESIGN_GATES.md).

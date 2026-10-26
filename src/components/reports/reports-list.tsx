@@ -7,9 +7,8 @@ import {
   categoryLabels,
   dateLabel,
   shortChannel,
-  statuses,
 } from "@/lib/constants";
-import { StatusBadge, ConfidentialBadge } from "./ui";
+import { StatusBadge, ConfidentialBadge } from "@/components/ui/badge";
 import type { ReportView } from "@/types/app";
 export function ReportsList({ reports }: { reports: ReportView[] }) {
   const [tab, setTab] = useState("all");
@@ -60,15 +59,15 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
         <div className="panel-heading">
           <div>
             <h2>Your reports</h2>
-            <p>Every concern, with a clear way to follow up.</p>
+            <p>Your references, receiving channels, and latest updates.</p>
           </div>
           <span className="quiet-badge">
-            <FileText size={13} />
+            <FileText aria-hidden="true" size={13} />
             {reports.length} reports
           </span>
         </div>
         <div className="list-toolbar">
-          <div className="tabs" role="tablist" aria-label="Report status">
+          <div className="tabs" role="group" aria-label="Filter reports">
             {[
               { id: "all", text: "All reports", count: reports.length },
               { id: "active", text: "Active", count: active.length },
@@ -80,8 +79,8 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
             ].map((t) => (
               <button
                 key={t.id}
-                role="tab"
-                aria-selected={tab === t.id}
+                type="button"
+                aria-pressed={tab === t.id}
                 onClick={() => setTab(t.id)}
                 className={tab === t.id ? "active" : ""}
               >
@@ -92,10 +91,13 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
           </div>
           <div className="list-controls">
             <label className="search-field">
-              <Search size={16} />
+              <Search aria-hidden="true" size={16} />
               <span className="sr-only">Search reports</span>
               <input
-                placeholder="Search reference or category"
+                name="search"
+                type="search"
+                autoComplete="off"
+                placeholder="Search reference or category…"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -103,6 +105,7 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
             <label>
               <span className="sr-only">Filter by category</span>
               <select
+                name="category"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
@@ -125,7 +128,7 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
                 key={r.ref}
               >
                 <span className="report-list-icon">
-                  <FileText size={22} strokeWidth={1.4} />
+                  <FileText aria-hidden="true" size={22} strokeWidth={1.4} />
                 </span>
                 <div className="report-list-body">
                   <div className="report-card-top">
@@ -135,7 +138,7 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
                   </div>
                   <h3>{categoryLabels[r.category]}</h3>
                   <p>
-                    <MapPin size={13} />
+                    <MapPin aria-hidden="true" size={13} />
                     {r.location?.name}
                     <span>·</span>
                     {shortChannel(r.channel ?? "SECURITY")}
@@ -144,14 +147,14 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
                 </div>
                 <div className="report-card-end">
                   <StatusBadge status={r.status} />
-                  <ArrowUpRight size={18} />
+                  <ArrowUpRight aria-hidden="true" size={18} />
                 </div>
               </Link>
             ))}
           </div>
         ) : (
           <div className="empty-state">
-            <FileText size={34} strokeWidth={1.2} />
+            <FileText aria-hidden="true" size={34} strokeWidth={1.2} />
             <h3>
               {reports.length
                 ? "No matching reports"
@@ -164,7 +167,8 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
             </p>
             {!reports.length && (
               <Link className="button button-primary" href="/report/new">
-                Create your first report <ArrowUpRight size={16} />
+                Create your first report{" "}
+                <ArrowUpRight aria-hidden="true" size={16} />
               </Link>
             )}
           </div>

@@ -1,6 +1,6 @@
 import { Prisma, type Status } from "@prisma/client";
 import { db } from "./db";
-import { ApiError } from "./http";
+import { ApiError } from "./http/errors";
 import {
   canEdit,
   canHandle,

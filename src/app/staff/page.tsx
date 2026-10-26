@@ -1,8 +1,8 @@
 import { requireUser } from "@/lib/page-auth";
 import { listReports } from "@/lib/reports";
 import { staffChannel } from "@/lib/access";
-import { PageHeading } from "@/components/ui";
-import { StaffQueue } from "@/components/staff-queue";
+import { PageHeading } from "@/components/ui/page-heading";
+import { StaffQueue } from "@/components/staff/staff-queue";
 export default async function Staff() {
   const user = await requireUser("staff");
   const channel = staffChannel(user) === "COMMITTEE" ? "Committee" : "Security";
@@ -10,8 +10,8 @@ export default async function Staff() {
   return (
     <div className="shell page-content">
       <PageHeading
-        eyebrow={`${channel.toUpperCase()} · RESPONDER PORTAL`}
-        title="A clear view of what needs you."
+        eyebrow={`${channel} responder portal`}
+        title="Report queue"
         description="Review, assign, and follow up on reports in your receiving channel."
         action={
           <div className="portal-label">

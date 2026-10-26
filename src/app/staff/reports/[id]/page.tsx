@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/page-auth";
 import { getReport } from "@/lib/reports";
 import { staffChannel } from "@/lib/access";
-import { ApiError } from "@/lib/http";
+import { ApiError } from "@/lib/http/errors";
 import { db } from "@/lib/db";
-import { ReportDetail } from "@/components/report-detail";
-import { StaffActions } from "@/components/staff-actions";
+import { ReportDetail } from "@/components/reports/report-detail";
+import { StaffActions } from "@/components/staff/staff-actions";
 export default async function StaffDetail({
   params,
 }: {

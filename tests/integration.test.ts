@@ -9,7 +9,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { SessionUser } from "../src/lib/access";
 let db: PrismaClient;
 let service: typeof import("../src/lib/reports");
-let ApiError: typeof import("../src/lib/http").ApiError;
+let ApiError: typeof import("../src/lib/http/errors").ApiError;
 let temp: string;
 let student: SessionUser,
   other: SessionUser,
@@ -50,7 +50,7 @@ before(async () => {
   assert.equal(pushed.status, 0, "Isolated test database must initialise");
   ({ db } = await import("../src/lib/db"));
   service = await import("../src/lib/reports");
-  ({ ApiError } = await import("../src/lib/http"));
+  ({ ApiError } = await import("../src/lib/http/errors"));
   const roles = [
     "STUDENT",
     "STUDENT",

@@ -14,7 +14,7 @@ import {
   dateLabel,
   statusLabels,
 } from "@/lib/constants";
-import { StatusBadge, ConfidentialBadge } from "./ui";
+import { StatusBadge, ConfidentialBadge } from "@/components/ui/badge";
 import type { ReportView } from "@/types/app";
 export function ReportDetail({
   report,
@@ -31,12 +31,12 @@ export function ReportDetail({
   return (
     <div className="shell page-content">
       <Link className="back-link" href={staff ? "/staff" : "/reports"}>
-        <ArrowLeft size={15} />
+        <ArrowLeft aria-hidden="true" size={15} />
         {staff ? "Back to queue" : "My reports"}
       </Link>
       {submitted && !staff && (
         <div className="notice success-notice" role="status">
-          <CheckCircle2 size={23} />
+          <CheckCircle2 aria-hidden="true" size={23} />
           <div>
             <strong>Your report has been saved.</strong>
             <p>
@@ -62,7 +62,7 @@ export function ReportDetail({
             className="button button-outline"
             href={`/reports/${report.ref}/edit`}
           >
-            <FilePenLine size={16} />
+            <FilePenLine aria-hidden="true" size={16} />
             Edit report
           </Link>
         )}
@@ -72,7 +72,7 @@ export function ReportDetail({
           {redacted ? (
             <section className="panel restricted-panel">
               <span className="large-icon">
-                <LockKeyhole size={27} />
+                <LockKeyhole aria-hidden="true" size={27} />
               </span>
               <h2>These details are confidential.</h2>
               <p>
@@ -81,7 +81,7 @@ export function ReportDetail({
                 assigned handler and authorised Security supervisors.
               </p>
               <p>
-                <Clock3 size={15} />
+                <Clock3 aria-hidden="true" size={15} />
                 Submitted {dateLabel(report.createdAt)}
               </p>
               <div className="notice">
@@ -96,7 +96,7 @@ export function ReportDetail({
               <section className="panel">
                 <div className="panel-heading">
                   <h2>
-                    <FileText size={18} />
+                    <FileText aria-hidden="true" size={18} />
                     Incident details
                   </h2>
                   <span className="quiet-badge">{report.ref}</span>
@@ -106,7 +106,7 @@ export function ReportDetail({
                     <div>
                       <dt>Location</dt>
                       <dd>
-                        <MapPin size={15} />
+                        <MapPin aria-hidden="true" size={15} />
                         {report.location?.name}
                       </dd>
                       {report.locationNote && (
@@ -163,7 +163,7 @@ export function ReportDetail({
                       <span
                         className={`timeline-marker ${index === (report.events?.length ?? 0) - 1 ? "latest" : ""}`}
                       >
-                        <CheckCircle2 size={14} />
+                        <CheckCircle2 aria-hidden="true" size={14} />
                       </span>
                       <div>
                         <div className="timeline-event-heading">
@@ -183,7 +183,7 @@ export function ReportDetail({
                         {staff && event.internalNote && (
                           <div className="internal-note">
                             <strong>
-                              <LockKeyhole size={12} />
+                              <LockKeyhole aria-hidden="true" size={12} />
                               Internal note
                             </strong>
                             <p>{event.internalNote}</p>
@@ -202,7 +202,7 @@ export function ReportDetail({
           {!staff && (
             <section className="panel next-panel">
               <span className="mini-icon">
-                <Clock3 size={21} />
+                <Clock3 aria-hidden="true" size={21} />
               </span>
               <h3>What happens next?</h3>
               <p>

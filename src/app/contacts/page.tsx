@@ -1,16 +1,16 @@
 import { MapPin, Phone, ArrowUpRight, Info, ShieldCheck } from "lucide-react";
 import { contacts } from "@/config/contacts";
-import { PageHeading } from "@/components/ui";
+import { PageHeading } from "@/components/ui/page-heading";
 export default function Contacts() {
   return (
     <div className="shell page-content">
       <PageHeading
-        eyebrow="HELP & CONTACTS"
-        title="Know where to turn."
+        eyebrow="Help & contacts"
+        title="Emergency contacts"
         description="Reach the people who support campus safety. For immediate danger, go directly to the QRS."
       />
       <div className="notice notice-urgent">
-        <Info size={20} />
+        <Info aria-hidden="true" size={20} />
         <div>
           <strong>This app is not monitored 24/7.</strong>
           <p>
@@ -23,11 +23,11 @@ export default function Contacts() {
         {contacts.map((contact) => (
           <article className="panel contact-card" key={contact.name}>
             <span className="large-icon">
-              <ShieldCheck size={27} />
+              <ShieldCheck aria-hidden="true" size={27} />
             </span>
             <h2>{contact.name}</h2>
             <p className="location-line">
-              <MapPin size={16} />
+              <MapPin aria-hidden="true" size={16} />
               {contact.location}
             </p>
             <p>{contact.description}</p>
@@ -36,13 +36,13 @@ export default function Contacts() {
                 className="button button-primary"
                 href={`tel:${contact.phone}`}
               >
-                <Phone size={16} />
+                <Phone aria-hidden="true" size={16} />
                 Call {contact.phone}
-                <ArrowUpRight size={16} />
+                <ArrowUpRight aria-hidden="true" size={16} />
               </a>
             ) : (
               <div className="unverified-note">
-                <Info size={15} />
+                <Info aria-hidden="true" size={15} />
                 Phone number awaiting verification. Visit the location for
                 assistance.
               </div>
@@ -58,7 +58,7 @@ export default function Contacts() {
           campus security structure.
         </p>
         <a href="/report/new" className="text-link">
-          Report an incident <ArrowUpRight size={16} />
+          Report an incident <ArrowUpRight aria-hidden="true" size={16} />
         </a>
       </div>
     </div>

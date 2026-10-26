@@ -1,0 +1,268 @@
+{
+  "primitive": {
+    "color": {
+      "navy": {
+        "$value": "#132D46"
+      },
+      "navy-hover": {
+        "$value": "#204763"
+      },
+      "teal": {
+        "$value": "#0B6477"
+      },
+      "teal-hover": {
+        "$value": "#084F5E"
+      },
+      "white": {
+        "$value": "#FFFFFF"
+      },
+      "paper": {
+        "$value": "#F4F7FB"
+      },
+      "slate": {
+        "$value": "#526478"
+      },
+      "ink": {
+        "$value": "#142D43"
+      },
+      "line": {
+        "$value": "#D8E1EB"
+      },
+      "control-line": {
+        "$value": "#7A8C9E"
+      },
+      "soft-blue": {
+        "$value": "#EAF1F7"
+      },
+      "soft-teal": {
+        "$value": "#E9F4F5"
+      },
+      "amber": {
+        "$value": "#805012"
+      },
+      "amber-bg": {
+        "$value": "#FFF4DB"
+      },
+      "red": {
+        "$value": "#A32D2D"
+      },
+      "red-bg": {
+        "$value": "#FEF0EF"
+      },
+      "success": {
+        "$value": "#1B6846"
+      },
+      "success-bg": {
+        "$value": "#EAF5EE"
+      },
+      "assigned": {
+        "$value": "#1E4F91"
+      },
+      "assigned-bg": {
+        "$value": "#EDF3FE"
+      },
+      "progress": {
+        "$value": "#5941A9"
+      },
+      "progress-bg": {
+        "$value": "#F1EEFD"
+      },
+      "nav-muted": {
+        "$value": "#D5E2EF"
+      }
+    },
+    "space": {
+      "1": {
+        "$value": "0.25rem"
+      },
+      "2": {
+        "$value": "0.5rem"
+      },
+      "3": {
+        "$value": "0.75rem"
+      },
+      "4": {
+        "$value": "1rem"
+      },
+      "5": {
+        "$value": "1.25rem"
+      },
+      "6": {
+        "$value": "1.5rem"
+      },
+      "8": {
+        "$value": "2rem"
+      },
+      "10": {
+        "$value": "2.5rem"
+      },
+      "12": {
+        "$value": "3rem"
+      },
+      "16": {
+        "$value": "4rem"
+      }
+    },
+    "radius": {
+      "small": {
+        "$value": "6px"
+      },
+      "medium": {
+        "$value": "10px"
+      },
+      "large": {
+        "$value": "16px"
+      }
+    },
+    "font": {
+      "body": {
+        "$value": "\"Segoe UI\", \"Helvetica Neue\", Arial, sans-serif"
+      },
+      "small": {
+        "$value": "0.875rem"
+      },
+      "base": {
+        "$value": "1rem"
+      }
+    }
+  },
+  "semantic": {
+    "color": {
+      "background": {
+        "$value": "var(--primitive-color-paper)"
+      },
+      "surface": {
+        "$value": "var(--primitive-color-white)"
+      },
+      "foreground": {
+        "$value": "var(--primitive-color-ink)"
+      },
+      "muted": {
+        "$value": "var(--primitive-color-slate)"
+      },
+      "border": {
+        "$value": "var(--primitive-color-line)"
+      },
+      "control-border": {
+        "$value": "var(--primitive-color-control-line)"
+      },
+      "primary": {
+        "$value": "var(--primitive-color-teal)"
+      },
+      "primary-hover": {
+        "$value": "var(--primitive-color-teal-hover)"
+      },
+      "on-primary": {
+        "$value": "var(--primitive-color-white)"
+      },
+      "nav": {
+        "$value": "var(--primitive-color-navy)"
+      },
+      "nav-hover": {
+        "$value": "var(--primitive-color-navy-hover)"
+      },
+      "on-nav": {
+        "$value": "var(--primitive-color-white)"
+      },
+      "nav-muted": {
+        "$value": "var(--primitive-color-nav-muted)"
+      },
+      "subtle": {
+        "$value": "var(--primitive-color-soft-blue)"
+      },
+      "primary-subtle": {
+        "$value": "var(--primitive-color-soft-teal)"
+      },
+      "warning": {
+        "$value": "var(--primitive-color-amber)"
+      },
+      "warning-surface": {
+        "$value": "var(--primitive-color-amber-bg)"
+      },
+      "danger": {
+        "$value": "var(--primitive-color-red)"
+      },
+      "danger-surface": {
+        "$value": "var(--primitive-color-red-bg)"
+      },
+      "success": {
+        "$value": "var(--primitive-color-success)"
+      },
+      "success-surface": {
+        "$value": "var(--primitive-color-success-bg)"
+      },
+      "assigned": {
+        "$value": "var(--primitive-color-assigned)"
+      },
+      "assigned-surface": {
+        "$value": "var(--primitive-color-assigned-bg)"
+      },
+      "progress": {
+        "$value": "var(--primitive-color-progress)"
+      },
+      "progress-surface": {
+        "$value": "var(--primitive-color-progress-bg)"
+      },
+      "focus": {
+        "$value": "var(--primitive-color-teal)"
+      }
+    },
+    "spacing": {
+      "page": {
+        "$value": "var(--primitive-space-8)"
+      },
+      "section": {
+        "$value": "var(--primitive-space-16)"
+      },
+      "field": {
+        "$value": "var(--primitive-space-5)"
+      }
+    }
+  },
+  "component": {
+    "button": {
+      "bg": {
+        "$value": "var(--color-primary)"
+      },
+      "fg": {
+        "$value": "var(--color-on-primary)"
+      },
+      "hover-bg": {
+        "$value": "var(--color-primary-hover)"
+      },
+      "radius": {
+        "$value": "var(--primitive-radius-small)"
+      }
+    },
+    "input": {
+      "bg": {
+        "$value": "var(--color-surface)"
+      },
+      "border": {
+        "$value": "var(--color-control-border)"
+      },
+      "radius": {
+        "$value": "var(--primitive-radius-small)"
+      }
+    },
+    "panel": {
+      "bg": {
+        "$value": "var(--color-surface)"
+      },
+      "border": {
+        "$value": "var(--color-border)"
+      },
+      "radius": {
+        "$value": "var(--primitive-radius-medium)"
+      }
+    },
+    "motion": {
+      "fast": {
+        "$value": "140ms"
+      },
+      "normal": {
+        "$value": "220ms"
+      }
+    }
+  }
+}

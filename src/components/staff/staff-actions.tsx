@@ -1,11 +1,15 @@
 "use client";
 import { useState } from "react";
+import { ErrorSummary } from "@/components/ui/error-summary";
+import { HttpError, request, reportUrl } from "@/lib/http/client";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, UserRoundCheck } from "lucide-react";
 import { transitions } from "@/lib/status";
 import { statusLabels } from "@/lib/constants";
 import type { Status } from "@prisma/client";
 import type { ReportView } from "@/types/app";
+const noFields: Record<string, string> = {};
+
 export function StaffActions({
   report,
   users,
@@ -24,24 +28,15 @@ export function StaffActions({
   const [next, setNext] = useState("");
   const redacted = !report.id;
   const terminal = ["CLOSED", "REJECTED"].includes(report.status);
-  async function send(action: string, data: object) {
+  async function send(action: "status" | "assign" | "refer", data: object) {
     setBusy(true);
     setError("");
     setMessage("");
     try {
-      const response = await fetch(
-        `/api/reports/${report.id ?? report.ref}/${action}`,
-        {
-          method: action === "status" ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        },
-      );
-      const result = await response.json();
-      if (!response.ok) {
-        setError(result.error);
-        return;
-      }
+      await request(reportUrl(report.id ?? report.ref, action), {
+        method: action === "status" ? "PATCH" : "POST",
+        body: data,
+      });
       if (action === "refer") {
         router.push("/staff");
         router.refresh();
@@ -50,9 +45,11 @@ export function StaffActions({
       setMessage("Report updated.");
       setNext("");
       router.refresh();
-    } catch {
+    } catch (error) {
       setError(
-        "Could not confirm the update. Refresh the report before trying again.",
+        error instanceof HttpError
+          ? error.message
+          : "Could not confirm the update. Refresh the report before trying again.",
       );
     } finally {
       setBusy(false);
@@ -72,11 +69,7 @@ export function StaffActions({
         </div>
       </div>
       <div className="action-content">
-        {error && (
-          <div className="form-error" role="alert">
-            {error}
-          </div>
-        )}
+        <ErrorSummary message={error} fields={noFields} />
         {message && (
           <div className="notice success-notice" role="status">
             {message}
@@ -146,9 +139,11 @@ export function StaffActions({
               </>
             )}
             <button className="button button-primary" disabled={busy || !next}>
-              {busy ? <Loader2 size={16} className="spin" /> : null}Update
-              status
-              <ArrowRight size={16} />
+              {busy ? (
+                <Loader2 aria-hidden="true" size={16} className="spin" />
+              ) : null}
+              Update status
+              <ArrowRight aria-hidden="true" size={16} />
             </button>
           </form>
         )}
@@ -164,7 +159,7 @@ export function StaffActions({
             }}
           >
             <h3>
-              <UserRoundCheck size={17} />
+              <UserRoundCheck aria-hidden="true" size={17} />
               Assign a handler
             </h3>
             {redacted ? (
@@ -187,7 +182,7 @@ export function StaffActions({
             )}
             <button className="button button-outline" disabled={busy}>
               {redacted ? "Assign to me" : "Assign handler"}
-              <ArrowRight size={15} />
+              <ArrowRight aria-hidden="true" size={15} />
             </button>
           </form>
         )}
@@ -220,7 +215,7 @@ export function StaffActions({
               </label>
               <button className="button button-outline" disabled={busy}>
                 Refer report
-                <ArrowRight size={16} />
+                <ArrowRight aria-hidden="true" size={16} />
               </button>
             </form>
           )}

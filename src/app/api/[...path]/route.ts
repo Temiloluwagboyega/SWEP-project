@@ -3,7 +3,9 @@ import { hash } from "bcryptjs";
 import { db } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth";
 import { staffChannel } from "@/lib/access";
-import { apiError, ApiError, checkOrigin } from "@/lib/http";
+import { ApiError } from "@/lib/http/errors";
+import { apiError } from "@/lib/http/response";
+import { checkOrigin } from "@/lib/http/origin";
 import { registerSchema } from "@/lib/validation";
 import {
   listReports,

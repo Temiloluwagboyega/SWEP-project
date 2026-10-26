@@ -286,3 +286,17 @@ Installation is currently blocked by npm-registry DNS/network access, with requi
 ### Dependency/testing follow-up
 
 The subsequent installation retry again failed to resolve `registry.npmjs.org`; direct DNS lookup confirmed `ENOTFOUND`. Syntax (40 files) and pure access-policy checks (17 cases) were rerun successfully. Strict type, database integration, production-build, and browser checks remain unmet because dependencies are unavailable. `SETUP_CHECKLIST.md` now records the exact local commands, current email implementation gap, Resend configuration requirements, and remaining contact/database/hosting/operational prerequisites. No live email was sent and no cloud service was provisioned.
+
+### Design skills preparation
+
+At the user's request, seven complete design skill folders were packaged from this machine's existing Claude installation into `design-skills/codex-design-skills.zip`: UI UX Pro Max v2.13.0, Anthropic frontend-design, Vercel web-design-guidelines and vercel-react-best-practices, plus the UI UX Pro Max suite's design-system, ui-styling, and brand skills. UI UX Pro Max's instruction command paths were adapted for Codex. The archive retains data/references and available licenses; its manifest and checksum support verification.
+
+`scripts/install-design-skills.py` installs the bundle without network access and refuses to overwrite differing existing skills. `scripts/verify-design-skills.py` passed a temporary-directory install, idempotence/collision checks, UX/Next.js searches, non-persistent design-system generation, and helper syntax checks. Global `~/.codex/skills` and project `.agents/skills` writes were denied, so these skills are **prepared, not activated**. The user can run the installer from their normal terminal; availability should be checked on the next Codex turn. No app redesign was performed as part of skill installation. See `design-skills/README.md`.
+
+### Design and structure revision
+
+The seven installed design skills are now present in the Codex skill catalogue and were applied to the redesign. Components are grouped under `src/components/{auth,home,layout,reports,staff,ui}`. Request helpers are under `src/lib/http/{client,errors,origin,response}.ts`; the former flat `http.ts` and `components/ui.tsx` were removed and imports updated. Staff polling moved to `src/hooks/use-staff-queue.ts`. Styles are split into tokens/base/layout/components/pages; the design source is `docs/design-tokens.json` and `design-system/campusguard/MASTER.md`.
+
+The interface uses navy/teal/white public-service styling, larger text, clearer route guidance, contextual student/responder navigation, semantic staff records, and focused linked form errors. No framework/component-library dependency was added. Request-local React caching deduplicates session lookups without cross-user caching. The access rules and transition policy remain unchanged.
+
+`docs/design-upgrade.md` records skill contributions, structure and verification boundaries. `artifacts/design-preview.html` is a standalone fictional-data component preview; preview-only adapters refuse mutations. It is not a running or deployed backend app. Cached packages outside the application install enabled isolated rendering, but registry access still prevents full installation/build/type/integration testing. Chrome launch failed, so responsive screenshots and real-browser interaction are not claimed.

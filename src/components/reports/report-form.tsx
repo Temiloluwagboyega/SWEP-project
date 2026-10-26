@@ -3,33 +3,41 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   ArrowRight,
-  Check,
   Info,
   LockKeyhole,
   MapPin,
   ShieldCheck,
   Siren,
-  Users,
-  Loader2,
 } from "lucide-react";
-import { categories, categoryLabels } from "@/lib/constants";
+import { categories, categoryLabels, channels } from "@/lib/constants";
 import { editSchema, reportSchema } from "@/lib/validation";
+import { HttpError, reportUrl, request } from "@/lib/http/client";
+import { Button } from "@/components/ui/button";
+import { ErrorSummary } from "@/components/ui/error-summary";
 import type { ReportView } from "@/types/app";
 type Location = { id: string; name: string; area: string };
 export function ReportForm({
   locations,
   report,
+  initialChannel = "SECURITY",
 }: {
   locations: Location[];
   report?: ReportView;
+  initialChannel?: string;
 }) {
   const router = useRouter();
   const [category, setCategory] = useState(report?.category ?? "");
-  const [channel, setChannel] = useState(report?.channel ?? "SECURITY");
+  const [channel, setChannel] = useState(
+    report?.channel ??
+      (channels.includes(initialChannel as (typeof channels)[number])
+        ? initialChannel
+        : "SECURITY"),
+  );
   const [urgent, setUrgent] = useState(report?.urgent ?? false);
   const [confidential, setConfidential] = useState(
     report?.confidential ?? false,
   );
+  const [description, setDescription] = useState(report?.description ?? "");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,14 +58,13 @@ export function ReportForm({
     const form = new FormData(event.currentTarget);
     const editable = {
       category,
+      description,
       locationId: String(form.get("locationId") ?? ""),
       locationNote: String(form.get("locationNote") ?? ""),
-      description: String(form.get("description") ?? ""),
       urgent,
       confidential,
     };
-    const time = String(form.get("occurredAt") ?? "");
-    const date = new Date(time);
+    const date = new Date(String(form.get("occurredAt") ?? ""));
     const values = report
       ? editable
       : {
@@ -76,65 +83,64 @@ export function ReportForm({
     }
     setBusy(true);
     try {
-      const response = await fetch(
-        report ? `/api/reports/${report.id}` : "/api/reports",
-        {
-          method: report ? "PATCH" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(parsed.data),
-        },
+      const body = await request<{ ref: string }>(
+        report ? reportUrl(report.id ?? report.ref) : "/api/reports",
+        { method: report ? "PATCH" : "POST", body: parsed.data },
       );
-      const body = await response.json();
-      if (!response.ok) {
-        setError(body.error);
-        setFields(body.fields ?? {});
-        return;
-      }
       router.push(`/reports/${body.ref}${report ? "" : "?submitted=1"}`);
       router.refresh();
-    } catch {
+    } catch (e) {
       setError(
-        "Your report could not be confirmed. Check your reports before trying again to avoid submitting twice.",
+        e instanceof HttpError
+          ? e.message
+          : "Your report could not be confirmed. Check My reports before retrying to avoid submitting twice.",
       );
+      if (e instanceof HttpError) setFields(e.fields);
     } finally {
       setBusy(false);
     }
   }
+  const a11y = (name: string, hint?: string) => ({
+    id: name,
+    name,
+    "aria-invalid": !!fields[name],
+    "aria-describedby":
+      [hint, fields[name] ? `${name}-error` : undefined]
+        .filter(Boolean)
+        .join(" ") || undefined,
+  });
   const fieldError = (name: string) =>
     fields[name] ? (
-      <span className="field-error" id={`${name}-error`}>
+      <p className="field-error" id={`${name}-error`}>
         {fields[name]}
-      </span>
+      </p>
     ) : null;
-  const a11y = (name: string) => ({
-    "aria-invalid": !!fields[name],
-    "aria-describedby": fields[name] ? `${name}-error` : undefined,
-  });
   return (
-    <form className="report-form" onSubmit={submit} noValidate>
-      {error && (
-        <div className="form-error" role="alert">
-          {error}
-        </div>
-      )}
-      <section className="panel form-section">
+    <form className="report-form" noValidate onSubmit={submit}>
+      <ErrorSummary message={error} fields={fields} />
+      <section
+        className="panel form-section"
+        aria-labelledby="incident-details-heading"
+      >
         <div className="form-section-title">
-          <span>01</span>
+          <span aria-hidden="true">1</span>
           <div>
-            <h2>What happened?</h2>
-            <p>
-              A few details help the receiving team understand your concern.
-            </p>
+            <h2 id="incident-details-heading">Incident details</h2>
+            <p>Required fields are marked with an asterisk (*).</p>
           </div>
         </div>
         <div className="form-stack">
-          <label>
-            Incident category <span className="required">*</span>
+          <div className="form-field">
+            <label htmlFor="category">
+              Incident category{" "}
+              <span className="required" aria-hidden="true">
+                *
+              </span>
+            </label>
             <select
-              name="category"
+              {...a11y("category")}
               value={category}
               onChange={(e) => changeCategory(e.target.value)}
-              {...a11y("category")}
               required
             >
               <option value="">Select a category</option>
@@ -145,15 +151,19 @@ export function ReportForm({
               ))}
             </select>
             {fieldError("category")}
-          </label>
+          </div>
           <div className="form-two-col">
-            <label>
-              Campus location <span className="required">*</span>
+            <div className="form-field">
+              <label htmlFor="locationId">
+                Campus location{" "}
+                <span className="required" aria-hidden="true">
+                  *
+                </span>
+              </label>
               <select
-                name="locationId"
-                defaultValue={report?.location?.id ?? ""}
                 {...a11y("locationId")}
                 required
+                defaultValue={report?.location?.id ?? ""}
               >
                 <option value="">Choose a location</option>
                 {locations.map((l) => (
@@ -163,78 +173,95 @@ export function ReportForm({
                 ))}
               </select>
               {fieldError("locationId")}
-            </label>
+            </div>
             {!report && (
-              <label>
-                When did it happen? <span className="required">*</span>
+              <div className="form-field">
+                <label htmlFor="occurredAt">
+                  When did it happen?{" "}
+                  <span className="required" aria-hidden="true">
+                    *
+                  </span>
+                </label>
                 <input
+                  {...a11y("occurredAt", "occurredAt-help")}
                   type="datetime-local"
-                  name="occurredAt"
                   max={now || undefined}
-                  {...a11y("occurredAt")}
                   required
                 />
+                <p id="occurredAt-help" className="field-help">
+                  Enter the date and time in your local timezone.
+                </p>
                 {fieldError("occurredAt")}
-              </label>
+              </div>
             )}
           </div>
-          <label>
-            Location details <span className="optional">(optional)</span>
+          <div className="form-field">
+            <label htmlFor="locationNote">
+              Location details <span className="optional">(optional)</span>
+            </label>
             <input
-              name="locationNote"
-              placeholder="For example, behind the main entrance"
+              {...a11y("locationNote")}
+              autoComplete="off"
+              placeholder="For example, behind the main entrance…"
               maxLength={200}
               defaultValue={report?.locationNote ?? ""}
-              {...a11y("locationNote")}
             />
             {fieldError("locationNote")}
-          </label>
-          <label>
-            Describe the incident <span className="required">*</span>
+          </div>
+          <div className="form-field">
+            <label htmlFor="description">
+              Describe the incident{" "}
+              <span className="required" aria-hidden="true">
+                *
+              </span>
+            </label>
             <textarea
-              name="description"
-              rows={5}
+              {...a11y("description", "description-help")}
+              autoComplete="off"
+              rows={6}
               minLength={20}
               maxLength={2000}
-              placeholder="Tell us what happened and any details that may help. Avoid sharing unnecessary personal information about others."
-              defaultValue={report?.description ?? ""}
-              {...a11y("description")}
               required
+              placeholder="Describe what happened and the details that may help…"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
-            <span className="field-help">
-              20–2,000 characters. Please describe only what you know or
-              observed.
-            </span>
+            <div className="field-help-row">
+              <p id="description-help" className="field-help">
+                Use 20–2,000 characters. Include only what you know or observed.
+              </p>
+              <span className="field-help" aria-hidden="true">
+                {description.length.toLocaleString("en-NG")} / 2,000
+              </span>
+            </div>
             {fieldError("description")}
-          </label>
+          </div>
         </div>
       </section>
       {!report && (
-        <section className="panel form-section">
+        <section
+          className="panel form-section"
+          aria-labelledby="receiving-channel-heading"
+        >
           <div className="form-section-title">
-            <span>02</span>
+            <span aria-hidden="true">2</span>
             <div>
-              <h2>Who should receive it?</h2>
-              <p>
-                You choose the receiving channel. We’ll help you find the right
-                fit.
-              </p>
+              <h2 id="receiving-channel-heading">Who should receive it?</h2>
+              <p>Your choice determines which channel reviews the report.</p>
             </div>
           </div>
-          <fieldset className="channel-options">
+          <fieldset className="channel-options" id="channel" tabIndex={-1}>
             <legend className="sr-only">Receiving channel</legend>
             {[
               {
                 id: "COMMITTEE",
-                icon: Users,
                 title: "Student Union Security Committee",
-                text: "Disputes between students, accommodation-agent issues, and civil matters suitable for mediation.",
+                text: "Student disputes, accommodation-agent issues, and civil matters suitable for mediation.",
               },
               {
                 id: "SECURITY",
-                icon: ShieldCheck,
                 title: "Official University Security",
-                text: "Theft, assault, threats, serious incidents, non-students, or concerns off campus.",
+                text: "Theft, assault, threats, serious incidents, or concerns involving non-students or off-campus locations.",
               },
             ].map((c) => (
               <label
@@ -247,13 +274,12 @@ export function ReportForm({
                   value={c.id}
                   checked={channel === c.id}
                   onChange={() => setChannel(c.id)}
+                  required
                 />
-                <c.icon size={24} strokeWidth={1.6} />
                 <span>
                   <strong>{c.title}</strong>
                   <small>{c.text}</small>
                 </span>
-                {channel === c.id && <Check size={18} />}
               </label>
             ))}
           </fieldset>
@@ -263,7 +289,7 @@ export function ReportForm({
               category,
             ) && (
               <div className="notice">
-                <Info size={18} />
+                <Info aria-hidden="true" size={20} />
                 <p>
                   Official Security usually handles this. You can still send it
                   to the Committee, who can refer it.
@@ -272,54 +298,57 @@ export function ReportForm({
             )}
         </section>
       )}
-      <section className="panel form-section">
+      <section className="panel form-section" aria-labelledby="privacy-heading">
         <div className="form-section-title">
-          <span>{report ? "02" : "03"}</span>
+          <span aria-hidden="true">{report ? "2" : "3"}</span>
           <div>
-            <h2>Urgency & privacy</h2>
-            <p>Let the receiving team know what your report needs.</p>
+            <h2 id="privacy-heading">Urgency & privacy</h2>
+            <p>Let the receiving team know what this report needs.</p>
           </div>
         </div>
         <label className="check-option">
           <input
+            id="urgent"
             type="checkbox"
+            name="urgent"
             checked={urgent}
             onChange={(e) => setUrgent(e.target.checked)}
-            name="urgent"
           />
           <span>
             <strong>
-              <Siren size={17} />
+              <Siren aria-hidden="true" size={18} />
               This is happening now or someone is in danger
             </strong>
             <small>
-              Urgent reports are highlighted in the staff queue. This does not
+              Urgent reports are highlighted in the queue. This does not
               dispatch help.
             </small>
           </span>
         </label>
         {urgent && (
-          <div className="notice notice-urgent" role="alert">
-            <Siren size={20} />
+          <div role="alert" className="notice notice-urgent">
+            <Siren aria-hidden="true" size={22} />
             <div>
               <strong>Don’t wait for the app — call/go to the QRS now.</strong>
               <p>
-                <MapPin size={14} /> Quick Response Squad, Senate Building, OAU.{" "}
-                <a href="/contacts">Emergency contacts →</a>
+                <MapPin aria-hidden="true" size={16} /> Quick Response Squad,
+                Senate Building, OAU.
               </p>
+              <a href="/contacts">Emergency contacts</a>
             </div>
           </div>
         )}
         <label className="check-option">
           <input
+            id="confidential"
             type="checkbox"
+            name="confidential"
             checked={confidential}
             onChange={(e) => setConfidential(e.target.checked)}
-            name="confidential"
           />
           <span>
             <strong>
-              <LockKeyhole size={16} />
+              <LockKeyhole aria-hidden="true" size={18} />
               Keep this report confidential
             </strong>
             <small>
@@ -328,21 +357,20 @@ export function ReportForm({
             </small>
           </span>
         </label>
-        <div className="field-help privacy-help">
-          <LockKeyhole size={13} />
+        <p className="field-help privacy-help">
+          <LockKeyhole aria-hidden="true" size={16} />
           Confidential does not mean anonymous. The handler can see who you are.
-        </div>
+        </p>
       </section>
       <div className="form-bottom">
         <p>
-          <ShieldCheck size={16} />
+          <ShieldCheck aria-hidden="true" size={18} />
           Your report is shared only with permitted responders.
         </p>
-        <button className="button button-primary" disabled={busy}>
-          {busy ? <Loader2 size={17} className="spin" /> : null}
+        <Button type="submit" loading={busy}>
           {busy ? "Saving report…" : report ? "Save changes" : "Submit report"}
-          <ArrowRight size={17} />
-        </button>
+          <ArrowRight aria-hidden="true" size={18} />
+        </Button>
       </div>
     </form>
   );

@@ -2,8 +2,11 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, LockKeyhole, Loader2 } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 import { loginSchema, registerSchema } from "@/lib/validation";
+import { HttpError, request } from "@/lib/http/client";
+import { Button } from "@/components/ui/button";
+import { ErrorSummary } from "@/components/ui/error-summary";
 export function AuthForm({ register = false }: { register?: boolean }) {
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
@@ -30,19 +33,8 @@ export function AuthForm({ register = false }: { register?: boolean }) {
     }
     setBusy(true);
     try {
-      if (register) {
-        const response = await fetch("/api/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(parsed.data),
-        });
-        const body = await response.json();
-        if (!response.ok) {
-          setError(body.error);
-          setFields(body.fields ?? {});
-          return;
-        }
-      }
+      if (register)
+        await request("/api/register", { method: "POST", body: parsed.data });
       const result = await signIn("credentials", {
         email: parsed.data.email,
         password: parsed.data.password,
@@ -52,111 +44,119 @@ export function AuthForm({ register = false }: { register?: boolean }) {
         setError(
           register
             ? "Account created. Please sign in to continue."
-            : "Email or password is incorrect. Please try again.",
+            : "Email or password is incorrect. Check your details and try again.",
         );
         return;
       }
-      // A server page resolves the destination from the authoritative account role.
       window.location.assign("/reports");
-    } catch {
-      setError("Unable to connect. Check your connection and try again.");
+    } catch (e) {
+      setError(
+        e instanceof HttpError
+          ? e.message
+          : "Unable to connect. Check your connection and try again.",
+      );
+      if (e instanceof HttpError) setFields(e.fields);
     } finally {
       setBusy(false);
     }
   }
+  function fieldProps(name: string) {
+    return {
+      id: name,
+      name,
+      "aria-invalid": !!fields[name],
+      "aria-describedby": fields[name] ? `${name}-error` : undefined,
+    };
+  }
+  function fieldError(name: string) {
+    return fields[name] ? (
+      <p className="field-error" id={`${name}-error`}>
+        {fields[name]}
+      </p>
+    ) : null;
+  }
   return (
-    <form onSubmit={submit} noValidate className="form-stack">
-      {error && (
-        <div role="alert" className="form-error">
-          {error}
+    <form className="form-stack" noValidate onSubmit={submit}>
+      <ErrorSummary message={error} fields={fields} />
+      {register && (
+        <div className="form-field">
+          <label htmlFor="name">Full name</label>
+          <input
+            {...fieldProps("name")}
+            autoComplete="name"
+            placeholder="Your full name…"
+            required
+            maxLength={100}
+          />
+          {fieldError("name")}
         </div>
       )}
-      {register && (
-        <label>
-          Full name
-          <input
-            name="name"
-            autoComplete="name"
-            placeholder="Your full name"
-            aria-invalid={!!fields.name}
-            aria-describedby={fields.name ? "name-error" : undefined}
-            required
-          />
-          {fields.name && (
-            <span id="name-error" className="field-error">
-              {fields.name}
-            </span>
-          )}
-        </label>
-      )}
-      <label>
-        Email address
+      <div className="form-field">
+        <label htmlFor="email">Email address</label>
         <input
-          name="email"
+          {...fieldProps("email")}
           type="email"
+          inputMode="email"
           autoComplete="email"
+          autoCapitalize="none"
+          spellCheck={false}
           placeholder="you@example.com"
           required
-          aria-invalid={!!fields.email}
-          aria-describedby={fields.email ? "email-error" : undefined}
+          maxLength={254}
         />
-        {fields.email && (
-          <span id="email-error" className="field-error">
-            {fields.email}
-          </span>
-        )}
-      </label>
-      <label>
-        Password
+        {fieldError("email")}
+      </div>
+      <div className="form-field">
+        <label htmlFor="password">Password</label>
         <div className="password-field">
           <input
-            name="password"
+            {...fieldProps("password")}
             type={visible ? "text" : "password"}
             autoComplete={register ? "new-password" : "current-password"}
             placeholder={
-              register ? "At least 8 characters" : "Enter your password"
+              register ? "At least 8 characters…" : "Enter your password…"
             }
-            required
             minLength={8}
-            aria-invalid={!!fields.password}
-            aria-describedby={fields.password ? "password-error" : undefined}
+            required
           />
           <button
             type="button"
             className="icon-button"
             aria-label={visible ? "Hide password" : "Show password"}
+            aria-pressed={visible}
             onClick={() => setVisible(!visible)}
           >
-            {visible ? <EyeOff size={17} /> : <Eye size={17} />}
+            {visible ? (
+              <EyeOff aria-hidden="true" size={19} />
+            ) : (
+              <Eye aria-hidden="true" size={19} />
+            )}
           </button>
         </div>
-        {fields.password && (
-          <span id="password-error" className="field-error">
-            {fields.password}
-          </span>
-        )}
-      </label>
-      <button disabled={busy} className="button button-primary button-full">
-        {busy ? <Loader2 className="spin" size={18} /> : null}
+        {fieldError("password")}
+      </div>
+      <Button type="submit" className="button-full" loading={busy}>
         {busy
-          ? "Please wait…"
+          ? register
+            ? "Creating account…"
+            : "Signing in…"
           : register
             ? "Create student account"
             : "Sign in"}
-        <ArrowRight size={17} />
-      </button>
+        <ArrowRight aria-hidden="true" size={18} />
+      </Button>
       <p className="auth-switch">
         {register ? "Already have an account?" : "New to CampusGuard?"}{" "}
         <Link href={register ? "/login" : "/register"}>
           {register ? "Sign in" : "Create an account"}
         </Link>
       </p>
-      <div className="auth-security">
-        <LockKeyhole size={14} />
+      <p className="auth-security">
+        <LockKeyhole aria-hidden="true" size={15} />
         {register
           ? "Staff accounts are created by the project team."
           : "Your account gives you access to your own reports."}
-      </div>
+      </p>
     </form>
   );
 }
