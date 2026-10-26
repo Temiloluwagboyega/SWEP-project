@@ -2,20 +2,11 @@
 
 Assessment: 26 October 2026. This is a source/configuration review plus the checks that could run in the current environment; it is not a successful runtime acceptance report.
 
-## Latest download and test attempt
+## Current installation and verification state
 
-Dependency installation was retried with `npm install --cache /tmp/swep-npm-cache --fetch-retries=1 --fetch-timeout=30000`. npm repeatedly reported `ENOTFOUND` for `registry.npmjs.org`, including requests for Prisma, bcrypt, and Lucide. A separate Node DNS lookup also returned `ENOTFOUND`. The retry was stopped after the repeated failures. No successful dependency installation or lockfile is claimed.
+The user completed npm installation in a normal terminal. Prisma 6.19.3 and Next.js 16.4.3 are installed. The initial SQLite migration is applied and the fictional demo database is seeded. Strict TypeScript checking, all seven database integration cases, and a cache-disabled production build now pass.
 
-| Check                       | Latest result                                                        | Meaning                                                                                                                  |
-| --------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| TypeScript syntax           | Passed, 40 source/configuration files                                | Source parses; this does not prove type safety.                                                                          |
-| Direct access-policy checks | Passed, 17 explicit cases plus redaction and status-table assertions | The actual pure access-control functions passed ownership, channel, confidentiality, and internal-note isolation checks. |
-| Strict TypeScript           | Blocked; command exited nonzero with missing-module/type diagnostics | Requires installed packages and generated Prisma types.                                                                  |
-| Database integration suite  | Blocked; `tsx` unavailable                                           | Database/lifecycle/concurrency tests have not executed.                                                                  |
-| Production build            | Blocked; `prisma` unavailable                                        | No production bundle has been built.                                                                                     |
-| Browser suite               | Blocked; `playwright` unavailable                                    | Login, forms, polling, and mobile usability have not been browser-verified.                                              |
-
-The existing acceptance ledger records 3 met gates, 4 unmet, 0 abandoned. One of the three met gates is a manual documentation review; these are not three passing runtime test suites.
+Browser checks are still blocked because this session cannot listen on `127.0.0.1:3000` (`EPERM`). This is distinct from the earlier npm DNS failure. No hosted PostgreSQL connection or deployment is configured. See [the verification report](docs/verification-status.md) for current evidence and commands.
 
 ## 1. Finish local installation and testing
 
@@ -33,7 +24,7 @@ npm run build
 npm run test:e2e
 ```
 
-The ignored local `.env` already contains a generated authentication secret and a SQLite URL. Do not print or share the secret. On a different checkout, copy `.env.example` and generate a new secret first.
+The ignored local `.env` already contains a generated authentication secret and a SQLite URL; its migration and demo seed have been applied. Do not print or share the secret. On a different checkout, copy `.env.example` and generate a new secret first.
 
 To view the app after setup:
 
@@ -43,7 +34,7 @@ npm run dev
 
 Open `http://localhost:3000`. The seeded demo password is `Demo#2026`; account names/roles are in README. Database integration tests use a temporary database. Browser tests write fictional reports/accounts into the local demo database.
 
-No email account, paid hosting, SMS account, map key, or cloud database is required to test the local MVP. Resolve any test failures after dependencies become available before declaring it working.
+No email account, paid hosting, SMS account, map key, or cloud database is required to test the local MVP. The database tests pass; complete browser acceptance outside this session before declaring every UI flow verified.
 
 ## 2. Email: both implementation and service setup are still needed
 

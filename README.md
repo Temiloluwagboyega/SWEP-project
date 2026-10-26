@@ -2,7 +2,7 @@
 
 A Smart Campus Security and Emergency Response System course prototype for Obafemi Awolowo University, Ile-Ife. Students choose the Student Union Security Committee or Official University Security, submit a report, and follow its status. Staff see only their own channel and permitted confidential information.
 
-The controlling requirements are summarised in [codex.md](codex.md). This repository now contains the initial application source. It is **not yet a verified, deployed MVP**: the current environment cannot resolve the npm registry, so dependencies could not be installed and type, integration, production-build, and browser checks are pending. See [GATES.md](GATES.md) for the acceptance ledger.
+The controlling requirements are summarised in [codex.md](codex.md). Dependencies are installed, the initial local SQLite migration is applied, and fictional demo data is seeded. Strict TypeScript checking and all seven database integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
 
 For the latest download/test retry and the precise email, database, contact, and hosting requirements, see [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md).
 
@@ -23,7 +23,7 @@ npm run db:setup
 npm run dev
 ```
 
-Open `http://localhost:3000`. The local fallback is SQLite at `prisma/dev.db`; reports persist across server restarts. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
+Open `http://localhost:3000`. The local fallback is SQLite at `prisma/dev.db`; the initial schema is recorded in `prisma/migrations/20261026132333_init/migration.sql`. Reports persist across process restarts. `db:setup` applies saved migrations and seeds fictional data. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
 
 If you use a different local host or port, update `AUTH_URL`. Keep browser requests on the same origin as the server.
 
@@ -51,7 +51,7 @@ Seed data includes 16 proposed campus locations and 15 fictional reports across 
 - Student timelines exclude internal notes, staff names, and staff IDs. Internal notes from a previous channel stay hidden after referral.
 - All pages display emergency direction and the app's monitoring limitation. No invented phone numbers or working placeholder phone links.
 
-“Implemented source” describes code present in the repository. Runtime functionality remains unverified until the checks below pass.
+Database-backed report services have now passed the integration suite. Authentication, browser interactions, and complete UI flows still require the browser checks below.
 
 ## Structure
 
@@ -113,6 +113,8 @@ Playwright starts the development server if one is not running. Browser tests su
 
 The offline access check executes the actual access-control and status-table source against explicit policy fixtures, including positive controls for redacted secrets. It does not substitute for database, session, API, or browser integration testing.
 
+Seed and integration commands use `node --import tsx` so they do not require the tsx CLI’s optional local IPC socket.
+
 The syntax check works with local TypeScript or the current machine's global TypeScript fallback. It only proves syntactic validity; it does not prove type safety, package compatibility, database correctness, authentication, browser behaviour, or build success.
 
 ## Recorded implementation assumptions
@@ -133,7 +135,7 @@ This app is designed for a Node.js host such as Vercel, following the brief. It 
 Before deploying:
 
 1. Install dependencies, generate and commit a reviewed lockfile, and pass type, integration, build, and browser checks.
-2. Provision PostgreSQL (for example, Neon or Supabase). Change only the datasource provider in `prisma/schema.prisma` from `sqlite` to `postgresql`; configure the PostgreSQL `DATABASE_URL`. Generate a PostgreSQL migration against an appropriate development database, review/commit it, and apply it with `prisma migrate deploy` to the target. `db:setup` is a local demo convenience, not a production migration process.
+2. Provision PostgreSQL (for example, Neon or Supabase) and configure its `DATABASE_URL`. PostgreSQL needs its own schema/provider and migration history; do not apply the saved SQLite migration SQL or its migration lock to PostgreSQL. Configure Prisma generation and the deployment build to use the selected PostgreSQL schema, generate/review its migration, apply it to staging, and rerun the database checks there. This cloud configuration has not been created yet.
 3. Configure a fresh `AUTH_SECRET`, canonical HTTPS `AUTH_URL`, and secure host/session settings. Do not seed shared demo passwords into real-use environments. Default Auth.js production cookies require HTTPS.
 4. Configure the deployment build as `npm run build`, and apply reviewed migrations as an explicit deployment step. Run staging tests again with PostgreSQL; passing SQLite checks does not prove PostgreSQL deployment behaviour.
 5. Verify QRS/contact information, finalise locations, agree queue-monitoring responsibilities, and review the confidential intake/referral assumptions with stakeholders.
@@ -141,7 +143,7 @@ Before deploying:
 
 ## Known limitations and deferred work
 
-- **Current execution blocker:** npm downloads fail with `ENOTFOUND registry.npmjs.org`; required dependencies are not fully cached. No production build, generated Prisma client, database seed, running preview, or browser results are claimed.
+- **Current browser blocker:** the session cannot listen on `127.0.0.1:3000`, so Playwright cannot start the test web server. Dependencies, the Prisma client, local migration, seed, integration tests, and low-disk production build are now verified. No live browser-flow or deployment result is claimed.
 - Emergency phone numbers are unverified. `VERIFY_BEFORE_DEMO` stays in configuration and is never presented as a phone number. The verified-contact acceptance check remains pending.
 - Committee participation, checking frequency, production readiness, and sensitive public-update policy are unconfirmed.
 - Anonymous reporting, evidence uploads, email/SMS/push notifications, patrol-entry UI, rejection-reason enforcement/duplicate linking, maps/GPS, analytics, and university integrations are deferred per the brief.
@@ -154,3 +156,15 @@ Before deploying:
 ## Design upgrade
 
 See [the design and folder guide](docs/design-upgrade.md), [brand direction](docs/brand-guidelines.md), and [design master](design-system/campusguard/MASTER.md). A standalone, fixture-only component preview is generated at `artifacts/design-preview.html`; it is not the running backend application. The redesign adds reusable UI components, feature folders, an HTTP helper folder, token-based styling, contextual portal navigation, accessible error summaries, and a responsive staff report table. Verification boundaries are recorded in [DESIGN_GATES.md](DESIGN_GATES.md).
+
+## Migration and low-disk commands
+
+`npm run db:setup` applies saved **SQLite** migrations and seeds the local demo. After changing the local Prisma schema, create a new development migration with `npm run db:migrate -- --name describe_change`. Do not reset an existing database merely to re-run setup. Integration tests continue to create a disposable schema in their own temporary database.
+
+The first build exhausted available disk while writing Webpack/TypeScript caches. Only task-generated temporary preview packages and `.next/cache` were removed. The following opt-in mode disables the production Webpack cache and completed successfully:
+
+```sh
+CAMPUS_DISABLE_BUILD_CACHE=1 npm run build
+```
+
+Normal development caching is unchanged. `.env`, the SQLite file, dependencies, and source files were preserved.

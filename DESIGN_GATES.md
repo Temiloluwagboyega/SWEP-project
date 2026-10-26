@@ -19,15 +19,15 @@ Scope: Redesign public and portal screens with a consistent, accessible design s
   EXPECT: DESIGN_STRUCTURE_PASSED
   EVIDENCE: automatic-evidence=v1; definition-sha256=e22307f1f5275bf0d2b5e483504cb742d8137435e74024c5cd3401539edf5769; exit=0; EXPECT=matched; output-sha256=af9c9b29a5ce4b73f24669a971f4d7cfdf8c2eb5c6e6c83eb059eedc6b95fb54; output-bytes=186; shell=/bin/sh; cwd=/Users/wikiwoo/Documents/swep; path=6b96db336957/34 entries
 
-- [ ] D4: Strict type checking passes with installed dependencies
+- [x] D4: Strict type checking passes with installed dependencies
   CHECK: npm run typecheck
   EXPECT: TYPECHECK_PASSED
-  EVIDENCE: pending
+  EVIDENCE: automatic-evidence=v1; definition-sha256=a9feb7548db5d5dd1e35480d7809e5337f4564c35e0bcf45f1d1ff2e2df9b105; exit=0; EXPECT=matched; output-sha256=b94d6f155a477ec91c521d2763395d6539d60a70a64a61afc9e1778802f5365b; output-bytes=117; shell=/bin/sh; cwd=/Users/wikiwoo/Documents/swep; path=6b96db336957/34 entries
 
-- [ ] D5: Production build succeeds
-  CHECK: npm run build
+- [x] D5: Production build succeeds
+  CHECK: CAMPUS_DISABLE_BUILD_CACHE=1 npm run build
   EXPECT: BUILD_PASSED
-  EVIDENCE: pending
+  EVIDENCE: automatic-evidence=v1; definition-sha256=0a6f18b320bd6397df14ccb5dc8ac112dd8b475ef3b14c91810c88470876d0e1; exit=0; EXPECT=matched; output-sha256=fa22b6e7c2ffa1c18b075a3c2c079caf7dbe4adcb93a074467562c9a4bf5ac2c; output-bytes=1258; shell=/bin/sh; cwd=/Users/wikiwoo/Documents/swep; path=6b96db336957/34 entries
 
 - [ ] D6: Revised screens render correctly on phone and desktop with keyboard-accessible navigation and forms
   EVIDENCE: pending
@@ -40,6 +40,8 @@ Scope: Redesign public and portal screens with a consistent, accessible design s
   EXPECT: DESIGN_PREVIEW_RENDERED
   EVIDENCE: automatic-evidence=v1; definition-sha256=b7bb3ce6bc023735b6ec357632875f5e7338464fe2646a0ecebb48d6638d61f9; exit=0; EXPECT=matched; output-sha256=f62cd3da464804dc9d18974934fee6f28f145b67f88dc92d6b75421dd9f391a9; output-bytes=96; shell=/bin/sh; cwd=/Users/wikiwoo/Documents/swep; path=6b96db336957/34 entries
 
-Offline preview runtime for this session: DESIGN_PREVIEW_RUNTIME=/tmp/swep-design-runtime/node_modules. This uses integrity-checked cached packages and isolated Next adapters; it does not validate the full application.
+Preview now uses the installed project dependencies by default. The earlier temporary cached runtime was removed after installation to reclaim disk space. The preview remains fixture-based and does not validate backend flows.
 
-D4/D5 require the missing application dependencies. D6 requires a browser that launches successfully; the Chrome process closed before a usable page was available.
+Dependencies are now installed and D4/D5 can be verified. D6 still requires browser execution: the test web server cannot listen on 127.0.0.1:3000 in this session.
+
+Shared-check provenance: D1/D2/D4/D5 reuse the exact current automatic evidence for identical commands in GATES:G0/G6/G1/G3, executed in this workspace. No additional rebuild was run merely to update this second ledger.

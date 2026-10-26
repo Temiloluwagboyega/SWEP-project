@@ -73,3 +73,9 @@ node scripts/render-design-preview.cjs
 In this restricted session, verified cached React, React DOM, Lucide, Zod and esbuild packages were restored under `/tmp/swep-design-runtime/node_modules`, outside the application install. The same builder ran using `DESIGN_PREVIEW_RUNTIME` pointed there. This generated the preview and server-rendered nine screens successfully without installing the application's missing Prisma/Auth.js dependencies. The cached packages were checked against their npm cache integrity records. They do not constitute a successful `npm install`.
 
 The production build and full strict type checks remain blocked by missing dependencies after another npm registry DNS failure. Chrome's launch attempt closed before a usable page became available. Therefore phone/desktop screenshots, real-browser reflow, keyboard interaction, and full application flows are **not marked verified**. Use `DESIGN_GATES.md` for the precise current acceptance status.
+
+## After dependency installation
+
+Dependencies are now installed. Strict TypeScript and seven actual database integration tests pass, and the production build passes with `CAMPUS_DISABLE_BUILD_CACHE=1`. The initial SQLite migration and demo data are verified. The temporary cached preview runtime was removed to recover disk space; the preview builder can now use the installed project dependencies. The earlier dependency-blocked notes above describe the design session, not the latest installation state.
+
+Live browser acceptance remains blocked by the session's inability to listen on `127.0.0.1:3000`. See [the current verification report](verification-status.md).

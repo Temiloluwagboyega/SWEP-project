@@ -300,3 +300,13 @@ The seven installed design skills are now present in the Codex skill catalogue a
 The interface uses navy/teal/white public-service styling, larger text, clearer route guidance, contextual student/responder navigation, semantic staff records, and focused linked form errors. No framework/component-library dependency was added. Request-local React caching deduplicates session lookups without cross-user caching. The access rules and transition policy remain unchanged.
 
 `docs/design-upgrade.md` records skill contributions, structure and verification boundaries. `artifacts/design-preview.html` is a standalone fictional-data component preview; preview-only adapters refuse mutations. It is not a running or deployed backend app. Cached packages outside the application install enabled isolated rendering, but registry access still prevents full installation/build/type/integration testing. Chrome launch failed, so responsive screenshots and real-browser interaction are not claimed.
+
+### Dependencies installed; local database migrated and tested
+
+The user completed npm installation in their terminal. Installed versions include Next.js 16.4.3 and Prisma 6.19.3; `package-lock.json` now records the resolution. Prisma generated successfully. The initial SQLite migration `prisma/migrations/20261026132333_init/migration.sql` was created and applied; the local demo contains 7 users, 16 locations, 15 reports, 49 events and 15 reference entries. These are fictional fixtures. Cloud PostgreSQL is not configured.
+
+Strict TypeScript and all seven database integration tests pass. The tsx CLI's local IPC socket was denied, so seed/test commands now use `node --import tsx`. `db:setup` applies saved migrations and seeds; `db:migrate` creates new local development migrations. The SQLite migration history must not be applied as PostgreSQL SQL.
+
+The first production build ran out of disk while writing caches. Only this task's temporary preview runtime and `.next/cache` were removed. `CAMPUS_DISABLE_BUILD_CACHE=1 npm run build` then passed, compiling app pages and API routes. The optional config flag leaves ordinary development caching unchanged.
+
+Playwright cannot start its web server because this session cannot listen on `127.0.0.1:3000` (`EPERM`). Do not claim a live login/browser/polling test, running server, cloud migration or deployment. The user can start the app via `npm run dev` in their normal terminal. `docs/verification-status.md`, GATES.md and DESIGN_GATES.md record the latest status; earlier npm-blocked log entries are historical.

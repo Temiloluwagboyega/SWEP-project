@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
   poweredByHeader: false,
+  webpack(config, { dev }) {
+    // Optional low-disk build mode; normal development caching stays enabled.
+    if (!dev && process.env.CAMPUS_DISABLE_BUILD_CACHE === "1")
+      config.cache = false;
+    return config;
+  },
   async headers() {
     return [
       {

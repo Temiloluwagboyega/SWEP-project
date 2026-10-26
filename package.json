@@ -8,12 +8,13 @@
     "start": "next start --hostname 127.0.0.1",
     "typecheck": "tsc --noEmit && node -e \"console.log('TYPECHECK_PASSED')\"",
     "db:generate": "prisma generate",
-    "db:setup": "prisma db push && tsx prisma/seed.ts",
-    "db:seed": "tsx prisma/seed.ts",
-    "test": "tsx --test tests/integration.test.ts && node -e \"console.log('INTEGRATION_PASSED')\"",
+    "db:setup": "prisma migrate deploy && node --import tsx prisma/seed.ts",
+    "db:seed": "node --import tsx prisma/seed.ts",
+    "test": "node --import tsx --test tests/integration.test.ts && node -e \"console.log('INTEGRATION_PASSED')\"",
     "test:e2e": "playwright test && node -e \"console.log('BROWSER_PASSED')\"",
     "check:syntax": "node scripts/check-syntax.cjs",
-    "check:access": "node scripts/check-access.cjs"
+    "check:access": "node scripts/check-access.cjs",
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
