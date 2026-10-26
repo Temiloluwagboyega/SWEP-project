@@ -19,6 +19,7 @@ import {
 } from "./validation";
 import { transitions } from "./status";
 import { categories, statuses } from "./constants";
+import { sendReportReceived, sendStatusUpdate, sendUrgentAlert } from "./email";
 const include = {
   location: true,
   reporter: { select: { id: true, name: true, email: true } },
@@ -103,7 +104,7 @@ export async function getReport(user: SessionUser, key: string) {
 export async function createReport(user: SessionUser, input: unknown) {
   if (user.role !== "STUDENT") denied();
   const data = reportSchema.parse(input);
-  return db.$transaction(async (tx) => {
+  const report = await db.$transaction(async (tx) => {
     await locationExists(tx, data.locationId);
     const sequence = await tx.referenceSequence.create({ data: {} });
     const ref = `SCS-${new Date().getUTCFullYear()}-${String(sequence.id).padStart(6, "0")}`;
@@ -123,9 +124,15 @@ export async function createReport(user: SessionUser, input: unknown) {
           },
         },
       },
+      include: { reporter: { select: { email: true } } },
     });
-    return { ref: report.ref, id: report.id, status: report.status };
+    return report;
   });
+  await Promise.all([
+    sendReportReceived(report.reporter.email, report.ref),
+    report.urgent && sendUrgentAlert(report.channel, report.ref),
+  ]);
+  return { ref: report.ref, id: report.id, status: report.status };
 }
 export async function editReport(
   user: SessionUser,
@@ -162,7 +169,7 @@ export async function changeStatus(
   input: unknown,
 ) {
   const data = statusSchema.parse(input);
-  return db.$transaction(async (tx) => {
+  const report = await db.$transaction(async (tx) => {
     const report = await find(tx, user, key);
     if (!staffChannel(user)) denied();
     // Unassigned confidential cases may be acknowledged using metadata only.
@@ -194,8 +201,10 @@ export async function changeStatus(
         actorChannel: staffChannel(user),
       },
     });
-    return { status: data.toStatus };
+    return report;
   });
+  await sendStatusUpdate(report.reporter.email, report.ref, data.toStatus);
+  return { status: data.toStatus };
 }
 export async function assignReport(
   user: SessionUser,
@@ -203,7 +212,7 @@ export async function assignReport(
   input: unknown,
 ) {
   const { assigneeId } = assignSchema.parse(input);
-  return db.$transaction(async (tx) => {
+  const report = await db.$transaction(async (tx) => {
     const report = await find(tx, user, key);
     const channel = staffChannel(user);
     if (!channel) denied();
@@ -230,8 +239,10 @@ export async function assignReport(
         publicNote: "A handler in the receiving channel has been assigned.",
       },
     });
-    return { status: "ASSIGNED" };
+    return report;
   });
+  await sendStatusUpdate(report.reporter.email, report.ref, "ASSIGNED");
+  return { status: "ASSIGNED" };
 }
 export async function referReport(
   user: SessionUser,
@@ -239,7 +250,7 @@ export async function referReport(
   input: unknown,
 ) {
   const { reason } = referSchema.parse(input);
-  return db.$transaction(async (tx) => {
+  const report = await db.$transaction(async (tx) => {
     const report = await find(tx, user, key);
     if (user.role !== "COMMITTEE" || !canHandle(user, report)) denied();
     if (["CLOSED", "REJECTED", "RESOLVED"].includes(report.status))
@@ -260,6 +271,11 @@ export async function referReport(
         publicNote: `Referred to Official Security. ${reason}`,
       },
     });
-    return { status: "SUBMITTED", channel: "SECURITY" };
+    return report;
   });
+  await Promise.all([
+    sendStatusUpdate(report.reporter.email, report.ref, "SUBMITTED"),
+    report.urgent && sendUrgentAlert("SECURITY", report.ref),
+  ]);
+  return { status: "SUBMITTED", channel: "SECURITY" };
 }

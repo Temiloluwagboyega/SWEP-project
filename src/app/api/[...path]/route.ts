@@ -7,6 +7,7 @@ import { ApiError } from "@/lib/http/errors";
 import { apiError } from "@/lib/http/response";
 import { checkOrigin } from "@/lib/http/origin";
 import { registerSchema } from "@/lib/validation";
+import { sendWelcome } from "@/lib/email";
 import {
   listReports,
   getReport,
@@ -43,6 +44,7 @@ async function route(request: Request, context: Context) {
           role: "STUDENT",
         },
       });
+      await sendWelcome(data.email, data.name);
       return NextResponse.json({ success: true }, { status: 201 });
     }
     const user = await getSessionUser();
