@@ -2,15 +2,13 @@ import "dotenv/config";
 import { test, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
+import { randomBytes } from "node:crypto";
 import type { PrismaClient } from "@prisma/client";
 import type { SessionUser } from "../src/lib/access";
 let db: PrismaClient;
 let service: typeof import("../src/lib/reports");
 let ApiError: typeof import("../src/lib/http/errors").ApiError;
-let temp: string;
+let schema: string | undefined;
 let student: SessionUser,
   other: SessionUser,
   committee: SessionUser,
@@ -40,8 +38,13 @@ async function errorCode(action: Promise<unknown>, code: number) {
   );
 }
 before(async () => {
-  temp = await mkdtemp(path.join(tmpdir(), "campus-security-test-"));
-  process.env.DATABASE_URL = `file:${path.join(temp, "test.db")}`;
+  const base = process.env.TEST_DATABASE_URL;
+  assert.ok(base, "Set TEST_DATABASE_URL to a PostgreSQL database for tests");
+  // A throwaway schema keeps tests isolated from the demo data in the same database.
+  schema = `test_${randomBytes(6).toString("hex")}`;
+  const url = new URL(base);
+  url.searchParams.set("schema", schema);
+  process.env.DATABASE_URL = process.env.DATABASE_URL_UNPOOLED = url.toString();
   const pushed = spawnSync(
     process.execPath,
     ["node_modules/prisma/build/index.js", "db", "push", "--skip-generate"],
@@ -81,8 +84,10 @@ before(async () => {
   ).id;
 });
 after(async () => {
-  if (db) await db.$disconnect();
-  if (temp) await rm(temp, { recursive: true, force: true });
+  if (db) {
+    if (schema) await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+    await db.$disconnect();
+  }
 });
 
 test("each channel persists reports, references, and initial timeline; students see only their own", async () => {

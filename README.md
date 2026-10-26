@@ -23,7 +23,9 @@ npm run db:setup
 npm run dev
 ```
 
-Open `http://localhost:3000`. The local fallback is SQLite at `prisma/dev.db`; reports persist across server restarts. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
+`db:setup` needs `DATABASE_URL` and `DATABASE_URL_UNPOOLED` pointing at a PostgreSQL database. The deployment uses Neon through Vercel Storage; for local work, use a separate Neon development branch, never the production database. Get the connection strings from Vercel → Storage → the database → **Open in Neon**.
+
+Open `http://localhost:3000`. Reports persist in PostgreSQL across server restarts. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
 
 If you use a different local host or port, update `AUTH_URL`. Keep browser requests on the same origin as the server.
 
@@ -67,7 +69,8 @@ src/lib/status.ts         Allowed status transitions
 src/lib/http/             Browser requests, backend errors, origin, responses
 src/styles/               Tokens, base, layout, shared components, page styles
 src/config/contacts.ts    Pending/verified contact configuration
-prisma/schema.prisma      Local SQLite schema
+prisma/schema.prisma      PostgreSQL schema
+prisma/migrations/        Reviewed migrations applied with `prisma migrate deploy`
 prisma/seed.ts             Non-destructive fictional demo seed
 scripts/check-syntax.cjs   Offline syntax check with malformed-code control
 tests/integration.test.ts  Database-backed lifecycle/privacy tests
@@ -80,7 +83,9 @@ The API is routed by `src/app/api/[...path]/route.ts`; Auth.js has its own more-
 
 | Variable          | Purpose                                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`    | Local: `file:./dev.db`. Production: a configured PostgreSQL connection after changing the Prisma provider.             |
+| `DATABASE_URL`    | Pooled PostgreSQL connection (set automatically by the Neon integration on Vercel).                                    |
+| `DATABASE_URL_UNPOOLED` | Direct PostgreSQL connection, used by Prisma for migrations.                                                     |
+| `TEST_DATABASE_URL` | PostgreSQL database for integration tests; each run creates and drops its own schema.                                |
 | `AUTH_SECRET`     | Unique random secret; required for secure sessions.                                                                    |
 | `AUTH_URL`        | Canonical application origin, locally `http://localhost:3000`.                                                         |
 | `AUTH_TRUST_HOST` | Local/trusted-host Auth.js configuration. Configure the canonical origin and host boundary deliberately in deployment. |
@@ -99,7 +104,7 @@ npm test
 npm run build
 ```
 
-Integration tests create and remove an isolated temporary SQLite database. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
+Integration tests create and drop an isolated temporary schema in the PostgreSQL database named by `TEST_DATABASE_URL`. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
 
 For browser checks, initialise the local demo database, install the browser, then run:
 
@@ -123,7 +128,7 @@ The syntax check works with local TypeScript or the current machine's global Typ
 4. **Internal history:** added immutable `StatusEvent.actorChannel` for accurate attribution and channel-specific internal notes after transfer. It is additional security/integrity metadata, not a new product feature. Reporter-created events are labelled “Reporter”. No staff identities are exposed to students.
 5. **References:** added a database autoincrement `ReferenceSequence`; the sequence is global, with the current UTC year in the reference prefix, rather than an unspecified annual reset.
 6. **Confidential queues:** strict metadata allowlist overrides general queue columns, including hiding location and assignee. Links use the already-permitted reference when the internal ID is redacted.
-7. **Local database:** no cloud database credentials were supplied, so the brief's SQLite fallback is used for local development. PostgreSQL remains the deployment target.
+7. **Database:** PostgreSQL (Neon, provisioned through Vercel Storage) for both deployment and local development. The earlier SQLite fallback has been removed.
 8. **Queue size:** list responses return up to 200 reports, prioritised according to the brief. Pagination beyond the course-demo scale is not implemented.
 
 ## Deployment prerequisites
@@ -133,9 +138,9 @@ This app is designed for a Node.js host such as Vercel, following the brief. It 
 Before deploying:
 
 1. Install dependencies, generate and commit a reviewed lockfile, and pass type, integration, build, and browser checks.
-2. Provision PostgreSQL (for example, Neon or Supabase). Change only the datasource provider in `prisma/schema.prisma` from `sqlite` to `postgresql`; configure the PostgreSQL `DATABASE_URL`. Generate a PostgreSQL migration against an appropriate development database, review/commit it, and apply it with `prisma migrate deploy` to the target. `db:setup` is a local demo convenience, not a production migration process.
+2. Attach a Neon database to the Vercel project (Storage tab), which sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`. Migrations in `prisma/migrations/` are applied by `prisma migrate deploy`. `db:setup` also seeds demo accounts and is a local convenience only.
 3. Configure a fresh `AUTH_SECRET`, canonical HTTPS `AUTH_URL`, and secure host/session settings. Do not seed shared demo passwords into real-use environments. Default Auth.js production cookies require HTTPS.
-4. Configure the deployment build as `npm run build`, and apply reviewed migrations as an explicit deployment step. Run staging tests again with PostgreSQL; passing SQLite checks does not prove PostgreSQL deployment behaviour.
+4. Vercel runs the `vercel-build` script, which applies pending migrations (`prisma migrate deploy`) and then runs `npm run build`.
 5. Verify QRS/contact information, finalise locations, agree queue-monitoring responsibilities, and review the confidential intake/referral assumptions with stakeholders.
 6. Obtain university approval and agree retention/deletion, backups/restoration, access reviews, incident handling and recovery procedures before accepting real incident data.
 

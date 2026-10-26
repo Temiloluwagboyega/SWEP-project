@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  // Neon on Vercel: pooled URL for queries, direct URL for migrations.
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum Role {
