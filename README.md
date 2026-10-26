@@ -1,0 +1,150 @@
+# CampusGuard · OAU
+
+A Smart Campus Security and Emergency Response System course prototype for Obafemi Awolowo University, Ile-Ife. Students choose the Student Union Security Committee or Official University Security, submit a report, and follow its status. Staff see only their own channel and permitted confidential information.
+
+The controlling requirements are summarised in [codex.md](codex.md). This repository now contains the initial application source. It is **not yet a verified, deployed MVP**: the current environment cannot resolve the npm registry, so dependencies could not be installed and type, integration, production-build, and browser checks are pending. See [GATES.md](GATES.md) for the acceptance ledger.
+
+For the latest download/test retry and the precise email, database, contact, and hosting requirements, see [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md).
+
+## Run locally
+
+Requirements: Node.js 22 LTS, npm, internet access for the initial dependency and Prisma engine downloads.
+
+```sh
+npm install
+cp .env.example .env
+```
+
+Replace `AUTH_SECRET` in `.env` with a unique random secret (for example, generate one with `openssl rand -base64 48`). The local working copy already has a generated, ignored `.env`; do not overwrite it unnecessarily. Never commit `.env`.
+
+```sh
+npm run db:generate
+npm run db:setup
+npm run dev
+```
+
+Open `http://localhost:3000`. The local fallback is SQLite at `prisma/dev.db`; reports persist across server restarts. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
+
+If you use a different local host or port, update `AUTH_URL`. Keep browser requests on the same origin as the server.
+
+## Demo accounts
+
+All of these fictional accounts use **`Demo#2026`**, stored as bcrypt hashes. They are local demo fixtures, not production credentials.
+
+| Email                                           | Role                |
+| ----------------------------------------------- | ------------------- |
+| `student1@demo.test` / `student2@demo.test`     | Student             |
+| `committee1@demo.test` / `committee2@demo.test` | Committee           |
+| `security1@demo.test` / `security2@demo.test`   | Security            |
+| `supervisor@demo.test`                          | Security supervisor |
+
+Seed data includes 16 proposed campus locations and 15 fictional reports across categories, statuses, and channels, including confidential, urgent, and referred examples. Public registration always creates a student. Staff accounts are seeded; there is no public admin registration.
+
+## Implemented source
+
+- Responsive landing page, contacts, registration/login, student reports, report form, editing, detail, and timeline pages.
+- Auth.js v5 Credentials authentication, bcrypt, JWT sessions, authoritative database role lookup.
+- Prisma persistence, sequence-backed references, transactional report changes and history.
+- Shared Zod validation, server-side ownership/channel checks, explicit confidential redaction, report-not-found 404 responses, origin checks on application mutations.
+- Staff queue filters, urgent/oldest sorting, age indicators, 30-second visible-tab polling, new-report badges/counts, and manual refresh.
+- Review, same-channel assignment, valid status changes, and one-way Committee-to-Security referral.
+- Student timelines exclude internal notes, staff names, and staff IDs. Internal notes from a previous channel stay hidden after referral.
+- All pages display emergency direction and the app's monitoring limitation. No invented phone numbers or working placeholder phone links.
+
+“Implemented source” describes code present in the repository. Runtime functionality remains unverified until the checks below pass.
+
+## Structure
+
+```text
+src/app/                  App Router pages and layouts
+src/app/api/              Node.js API handlers
+src/components/           Forms, queue, report detail, and shared UI
+src/lib/access.ts         Role/channel/owner/confidentiality checks and redaction
+src/lib/reports.ts        Transactional report lifecycle services
+src/lib/auth.ts           Authentication and session-user lookup
+src/lib/validation.ts     Shared input schemas
+src/lib/status.ts         Allowed status transitions
+src/config/contacts.ts    Pending/verified contact configuration
+prisma/schema.prisma      Local SQLite schema
+prisma/seed.ts             Non-destructive fictional demo seed
+scripts/check-syntax.cjs   Offline syntax check with malformed-code control
+tests/integration.test.ts  Database-backed lifecycle/privacy tests
+tests/browser/            Playwright browser flows
+```
+
+The API is routed by `src/app/api/[...path]/route.ts`; Auth.js has its own more-specific route. The public contract remains the endpoint paths defined in `codex.md`. Page handlers call the same protected services directly on the server. Server page guards replace the brief's optional middleware redirect; each API independently authorises access.
+
+## Environment
+
+| Variable          | Purpose                                                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`    | Local: `file:./dev.db`. Production: a configured PostgreSQL connection after changing the Prisma provider.             |
+| `AUTH_SECRET`     | Unique random secret; required for secure sessions.                                                                    |
+| `AUTH_URL`        | Canonical application origin, locally `http://localhost:3000`.                                                         |
+| `AUTH_TRUST_HOST` | Local/trusted-host Auth.js configuration. Configure the canonical origin and host boundary deliberately in deployment. |
+
+Do not log secrets, session contents, incident descriptions, or database error payloads. Staff email notifications are deferred; `RESEND_API_KEY` is not used by this implementation.
+
+## Checks
+
+After installing dependencies and generating the Prisma client:
+
+```sh
+npm run check:syntax
+npm run check:access
+npm run typecheck
+npm test
+npm run build
+```
+
+Integration tests create and remove an isolated temporary SQLite database. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
+
+For browser checks, initialise the local demo database, install the browser, then run:
+
+```sh
+npm run db:setup
+npx playwright install chromium
+npm run test:e2e
+```
+
+Playwright starts the development server if one is not running. Browser tests submit fictional reports and create a fictional student in the **demo database**, so this suite must never target a real deployment or real incident data. It covers registration, submission to both channels, open-queue polling, handling/referral, student privacy, wrong-account denial, cross-origin mutation rejection, and mobile/desktop overflow checks. Run against a disposable demo database if you want the original fixtures unchanged.
+
+The offline access check executes the actual access-control and status-table source against explicit policy fixtures, including positive controls for redacted secrets. It does not substitute for database, session, API, or browser integration testing.
+
+The syntax check works with local TypeScript or the current machine's global TypeScript fallback. It only proves syntactic validity; it does not prove type safety, package compatibility, database correctness, authentication, browser behaviour, or build success.
+
+## Recorded implementation assumptions
+
+1. **Review before assignment:** the transition table takes precedence over abbreviated demo instructions. Assignment is available from `UNDER_REVIEW` and creates `ASSIGNED` with a real handler.
+2. **Confidential intake:** same-channel staff can acknowledge an unassigned report into `UNDER_REVIEW` without notes, then claim it for themselves using metadata only. They cannot assign confidential cases to colleagues until they already have full-content permission. Security supervisors retain their stated channel-specific permissions. This conservative intake policy needs stakeholder review before real use.
+3. **Referral:** only active reports may be transferred; `RESOLVED`, `CLOSED`, and `REJECTED` reports cannot be referred. A confidential Committee report must be handled by its assignee before referral. Transfer resets status/assignee, revokes Committee access, and writes a public referral reason.
+4. **Internal history:** added immutable `StatusEvent.actorChannel` for accurate attribution and channel-specific internal notes after transfer. It is additional security/integrity metadata, not a new product feature. Reporter-created events are labelled “Reporter”. No staff identities are exposed to students.
+5. **References:** added a database autoincrement `ReferenceSequence`; the sequence is global, with the current UTC year in the reference prefix, rather than an unspecified annual reset.
+6. **Confidential queues:** strict metadata allowlist overrides general queue columns, including hiding location and assignee. Links use the already-permitted reference when the internal ID is redacted.
+7. **Local database:** no cloud database credentials were supplied, so the brief's SQLite fallback is used for local development. PostgreSQL remains the deployment target.
+8. **Queue size:** list responses return up to 200 reports, prioritised according to the brief. Pagination beyond the course-demo scale is not implemented.
+
+## Deployment prerequisites
+
+This app is designed for a Node.js host such as Vercel, following the brief. It has not been deployed. The Sites plugin's Cloudflare Workers hosting does not match the specified Node.js/Prisma architecture, so no Sites project was created.
+
+Before deploying:
+
+1. Install dependencies, generate and commit a reviewed lockfile, and pass type, integration, build, and browser checks.
+2. Provision PostgreSQL (for example, Neon or Supabase). Change only the datasource provider in `prisma/schema.prisma` from `sqlite` to `postgresql`; configure the PostgreSQL `DATABASE_URL`. Generate a PostgreSQL migration against an appropriate development database, review/commit it, and apply it with `prisma migrate deploy` to the target. `db:setup` is a local demo convenience, not a production migration process.
+3. Configure a fresh `AUTH_SECRET`, canonical HTTPS `AUTH_URL`, and secure host/session settings. Do not seed shared demo passwords into real-use environments. Default Auth.js production cookies require HTTPS.
+4. Configure the deployment build as `npm run build`, and apply reviewed migrations as an explicit deployment step. Run staging tests again with PostgreSQL; passing SQLite checks does not prove PostgreSQL deployment behaviour.
+5. Verify QRS/contact information, finalise locations, agree queue-monitoring responsibilities, and review the confidential intake/referral assumptions with stakeholders.
+6. Obtain university approval and agree retention/deletion, backups/restoration, access reviews, incident handling and recovery procedures before accepting real incident data.
+
+## Known limitations and deferred work
+
+- **Current execution blocker:** npm downloads fail with `ENOTFOUND registry.npmjs.org`; required dependencies are not fully cached. No production build, generated Prisma client, database seed, running preview, or browser results are claimed.
+- Emergency phone numbers are unverified. `VERIFY_BEFORE_DEMO` stays in configuration and is never presented as a phone number. The verified-contact acceptance check remains pending.
+- Committee participation, checking frequency, production readiness, and sensitive public-update policy are unconfirmed.
+- Anonymous reporting, evidence uploads, email/SMS/push notifications, patrol-entry UI, rejection-reason enforcement/duplicate linking, maps/GPS, analytics, and university integrations are deferred per the brief.
+- Rate limiting is a stretch requirement and is not yet implemented. Basic validation/origin checks do not replace it.
+- Student pages refresh on navigation; only the staff queue polls. Confidential reports expose category/urgency/time to channel staff as explicitly required by the brief.
+- Per-user server sessions are eight hours. Account recovery, suspension UI, and staff-account management are not in the MVP source.
+
+# SWEP-project

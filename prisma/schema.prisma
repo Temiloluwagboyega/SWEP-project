@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  COMMITTEE
+  SECURITY
+  SUPERVISOR
+}
+enum Channel {
+  COMMITTEE
+  SECURITY
+}
+enum Category {
+  THEFT
+  PHONE_THEFT
+  ACCOMMODATION_DISPUTE
+  CIVIL_MATTER
+  ASSAULT
+  SEXUAL_ASSAULT
+  SUSPICIOUS_ACTIVITY
+  SAFETY_HAZARD
+  OTHER
+}
+enum Status {
+  SUBMITTED
+  UNDER_REVIEW
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+  REJECTED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  passwordHash String
+  role         Role          @default(STUDENT)
+  createdAt    DateTime      @default(now())
+  reports      Report[]      @relation("Reporter")
+  assigned     Report[]      @relation("Assignee")
+  events       StatusEvent[]
+}
+
+model Location {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  area    String
+  reports Report[]
+}
+
+model Report {
+  id           String        @id @default(cuid())
+  ref          String        @unique
+  category     Category
+  description  String
+  locationId   String
+  location     Location      @relation(fields: [locationId], references: [id])
+  locationNote String?
+  occurredAt   DateTime
+  channel      Channel
+  urgent       Boolean       @default(false)
+  confidential Boolean       @default(false)
+  status       Status        @default(SUBMITTED)
+  reporterId   String
+  reporter     User          @relation("Reporter", fields: [reporterId], references: [id])
+  assigneeId   String?
+  assignee     User?         @relation("Assignee", fields: [assigneeId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  events       StatusEvent[]
+  @@index([channel, status])
+  @@index([reporterId])
+}
+
+model StatusEvent {
+  id           String   @id @default(cuid())
+  reportId     String
+  report       Report   @relation(fields: [reportId], references: [id])
+  fromStatus   Status?
+  toStatus     Status
+  action       String
+  actorId      String
+  actor        User     @relation(fields: [actorId], references: [id])
+  actorChannel Channel? // immutable attribution and internal-note boundary after referral
+  publicNote   String?
+  internalNote String?
+  createdAt    DateTime @default(now())
+}
+
+model ReferenceSequence {
+  id Int @id @default(autoincrement())
+}
