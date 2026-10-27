@@ -1,11 +1,20 @@
-import { Resend } from "resend";
+import nodemailer from "nodemailer";
 import type { Channel, Status } from "@prisma/client";
 import { db } from "./db";
 import { statusLabels } from "./constants";
 
-const apiKey = process.env.RESEND_API_KEY;
-const resend = apiKey ? new Resend(apiKey) : null;
-const from = process.env.EMAIL_FROM ?? "Campus Security <onboarding@resend.dev>";
+// Any SMTP server works; defaults suit Gmail with an app password.
+const user = process.env.SMTP_USER;
+const transport =
+  user && process.env.SMTP_PASS
+    ? nodemailer.createTransport({
+        host: process.env.SMTP_HOST ?? "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT ?? 465),
+        secure: Number(process.env.SMTP_PORT ?? 465) === 465,
+        auth: { user, pass: process.env.SMTP_PASS },
+      })
+    : null;
+const from = process.env.EMAIL_FROM ?? `Campus Security <${user}>`;
 const appUrl = (process.env.AUTH_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 // Emails only carry the reference, status and a link: reports can be sensitive,
@@ -24,14 +33,13 @@ function layout(heading: string, lines: string[], link: string, label: string) {
 
 // Delivery failures are logged, never thrown, so a mail outage cannot undo a report action.
 async function send(to: string, subject: string, html: string) {
-  if (!resend) {
+  if (!transport) {
     if (process.env.NODE_ENV !== "test")
-      console.info(`[email skipped: RESEND_API_KEY not set] ${subject}`);
+      console.info(`[email skipped: SMTP_USER/SMTP_PASS not set] ${subject}`);
     return;
   }
   try {
-    const { error } = await resend.emails.send({ from, to, subject, html });
-    if (error) console.error("Resend error:", error.message);
+    await transport.sendMail({ from, to, subject, html });
   } catch (error) {
     console.error("Email delivery failed:", error);
   }
