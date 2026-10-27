@@ -32,3 +32,9 @@ Visit `http://localhost:3000`. Student: `student1@demo.test`; staff: `security1@
 For browser testing outside the restricted session, install the Playwright Chromium browser if it is not already available, then run `npm run test:e2e`. Database integration tests use a disposable temporary database; browser tests write fictional records to the local demo database.
 
 A future PostgreSQL deployment needs a PostgreSQL-specific schema/migration history and matching Prisma generation/build configuration. The SQLite migration is not portable PostgreSQL SQL. Emergency contact phone verification, stakeholder operating procedures, and real-use approval are still pending; optional staff email is still unwired.
+
+## Security hardening — 27 October 2026
+
+The security migration is applied locally and preserved the fictional data. The private environment/key, persistent abuse counters, revocable/expiring sessions, bounded requests, canonical-origin/CSRF checks and browser policies are implemented. The current check record is [SECURITY_GATES.md](../SECURITY_GATES.md); controls and deployment limits are in [security.md](security.md). Earlier test counts refer to the pre-hardening run. Full browser acceptance still requires a permitted server/browser environment.
+
+Security acceptance covers 7 incident lifecycle cases and 15 security cases, including direct Auth.js CSRF/login/logout/revocation, concurrent persistent limits, fail-closed rate verification, bounded bodies and registration role injection. Typecheck, production build, access policy and local migration checks pass. The final disabled-handler change passed regression tests, typecheck and build. Seven of eight security gates are met; the browser gate is explicitly recorded as an outstanding handoff. Browser acceptance remains a required handoff. The npm audit attempt failed with registry DNS ENOTFOUND, so no clean dependency-audit claim is made.

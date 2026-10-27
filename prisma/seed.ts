@@ -3,7 +3,7 @@ import { PrismaClient, type Category, type Status } from "@prisma/client";
 import { hash } from "bcryptjs";
 const db = new PrismaClient();
 async function main() {
-  if (process.env.NODE_ENV === "production")
+  if (process.env.NODE_ENV === "production" || process.env.APP_ENV === "production")
     throw new Error("Demo seeding is disabled in production.");
   const passwordHash = await hash("Demo#2026", 12);
   const fixtures = [

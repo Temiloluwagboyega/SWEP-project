@@ -6,7 +6,7 @@ export function apiError(error: unknown) {
   if (error instanceof ApiError)
     return NextResponse.json(
       { error: error.message },
-      { status: error.status },
+      { status: error.status, headers: error.headers },
     );
   if (error instanceof ZodError)
     return NextResponse.json(
@@ -40,4 +40,11 @@ export function apiError(error: unknown) {
     { error: "Unable to complete this request. Please try again." },
     { status: 500 },
   );
+}
+
+export function privateResponse(response: Response) {
+  response.headers.set("Cache-Control", "private, no-store, max-age=0");
+  response.headers.set("Pragma", "no-cache");
+  response.headers.append("Vary", "Cookie");
+  return response;
 }

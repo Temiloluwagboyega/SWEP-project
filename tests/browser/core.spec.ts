@@ -159,7 +159,7 @@ test("registration creates a student and form validation blocks empty reports", 
   await page
     .getByLabel("Email address")
     .fill(`browser-${Date.now()}@demo.test`);
-  await page.getByLabel("Password", { exact: true }).fill("Demo#2026");
+  await page.getByLabel("Password", { exact: true }).fill("DemoBrowser#2026!");
   await page.getByRole("button", { name: "Create student account" }).click();
   await expect(page).toHaveURL(/\/reports$/);
   await page.goto("/report/new");
@@ -207,4 +207,40 @@ test("public pages and signed-in form fit mobile and desktop without horizontal 
   await page.goto("/contacts");
   await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
   await expect(page.getByText("VERIFY_BEFORE_DEMO")).toHaveCount(0);
+});
+
+test("page CSP nonces change between responses and the password control hydrates", async ({
+  page,
+}) => {
+  const violations: string[] = [];
+  page.on("console", (message) => {
+    if (
+      message.type() === "error" &&
+      /Content Security Policy|violates.*directive/i.test(message.text())
+    )
+      violations.push(message.text());
+  });
+  const first = await page.goto("/login");
+  const policy = first!.headers()["content-security-policy"];
+  expect(policy).toContain("strict-dynamic");
+  const nonce = policy.match(/'nonce-([^']+)'/)?.[1];
+  expect(nonce).toBeTruthy();
+  expect(
+    await page
+      .locator("script[nonce]")
+      .first()
+      .evaluate((script: HTMLScriptElement) => script.nonce),
+  ).toBe(nonce);
+  await page
+    .getByRole("button", { name: "Show password", exact: true })
+    .click();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveAttribute(
+    "type",
+    "text",
+  );
+  const second = await page.goto("/login");
+  expect(
+    second!.headers()["content-security-policy"].match(/'nonce-([^']+)'/)?.[1],
+  ).not.toBe(nonce);
+  expect(violations).toEqual([]);
 });

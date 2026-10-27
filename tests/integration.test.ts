@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { test, before, after } from "node:test";
+import { test, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
@@ -79,6 +79,9 @@ before(async () => {
       data: { name: "Fictional campus location", area: "Test" },
     })
   ).id;
+});
+beforeEach(async () => {
+  await db.rateLimitBucket.deleteMany();
 });
 after(async () => {
   if (db) await db.$disconnect();
@@ -249,6 +252,21 @@ test("status transitions, channel assignment, referral boundaries, and terminal 
     service.assignReport(committee, a.id, { assigneeId: security.id }),
     400,
   );
+  await db.user.update({
+    where: { id: committee2.id },
+    data: { isActive: false },
+  });
+  try {
+    await errorCode(
+      service.assignReport(committee, a.id, { assigneeId: committee2.id }),
+      400,
+    );
+  } finally {
+    await db.user.update({
+      where: { id: committee2.id },
+      data: { isActive: true },
+    });
+  }
   await service.assignReport(committee, a.id, { assigneeId: committee.id });
   await service.referReport(committee, a.id, {
     reason: "Requires official follow-up.",

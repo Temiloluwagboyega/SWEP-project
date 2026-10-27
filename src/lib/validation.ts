@@ -10,7 +10,7 @@ export const registerSchema = z
       .max(254),
     password: z
       .string()
-      .min(8, "Use at least 8 characters.")
+      .min(15, "Use at least 15 characters. A passphrase works well.")
       .max(72, "This password is too long. Use a shorter password.")
       .refine(
         (value) => new TextEncoder().encode(value).length <= 72,
@@ -18,7 +18,16 @@ export const registerSchema = z
       ),
   })
   .strict();
-export const loginSchema = registerSchema.pick({ email: true, password: true });
+export const loginSchema = registerSchema
+  .pick({ email: true })
+  .extend({
+    password: z
+      .string()
+      .min(8)
+      .max(72)
+      .refine((value) => new TextEncoder().encode(value).length <= 72),
+  })
+  .strict();
 const editable = {
   category: z.enum(categories, { error: "Choose an incident category." }),
   locationId: z.string().min(1, "Choose a campus location."),

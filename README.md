@@ -2,7 +2,7 @@
 
 A Smart Campus Security and Emergency Response System course prototype for Obafemi Awolowo University, Ile-Ife. Students choose the Student Union Security Committee or Official University Security, submit a report, and follow its status. Staff see only their own channel and permitted confidential information.
 
-The controlling requirements are summarised in [codex.md](codex.md). Dependencies are installed, the initial local SQLite migration is applied, and fictional demo data is seeded. Strict TypeScript checking and all seven database integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
+The controlling requirements are summarised in [codex.md](codex.md). Dependencies are installed, the initial local SQLite migration is applied, and fictional demo data is seeded. Strict TypeScript checking and the incident lifecycle integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
 
 For the latest download/test retry and the precise email, database, contact, and hosting requirements, see [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md).
 
@@ -12,10 +12,10 @@ Requirements: Node.js 22 LTS, npm, internet access for the initial dependency an
 
 ```sh
 npm install
-cp .env.example .env
+npm run env:setup
 ```
 
-Replace `AUTH_SECRET` in `.env` with a unique random secret (for example, generate one with `openssl rand -base64 48`). The local working copy already has a generated, ignored `.env`; do not overwrite it unnecessarily. Never commit `.env`.
+`env:setup` creates a private, Git-ignored `.env`, generates a random `AUTH_SECRET` if needed and preserves an existing valid key. The local working copy already has one. Never commit `.env`. See [the security baseline](docs/security.md) for session controls, exact rate limits and production prerequisites.
 
 ```sh
 npm run db:generate
@@ -83,7 +83,8 @@ The API is routed by `src/app/api/[...path]/route.ts`; Auth.js has its own more-
 | `DATABASE_URL`    | Local: `file:./dev.db`. Production: a configured PostgreSQL connection after changing the Prisma provider.             |
 | `AUTH_SECRET`     | Unique random secret; required for secure sessions.                                                                    |
 | `AUTH_URL`        | Canonical application origin, locally `http://localhost:3000`.                                                         |
-| `AUTH_TRUST_HOST` | Local/trusted-host Auth.js configuration. Configure the canonical origin and host boundary deliberately in deployment. |
+| `APP_ENV` | `local` for the localhost SQLite demo; `production` requires public HTTPS and PostgreSQL. |
+| `TRUSTED_CLIENT_IP_HEADER` | Optional single-IP header overwritten by a trusted reverse proxy. Leave empty locally. |
 
 Do not log secrets, session contents, incident descriptions, or database error payloads. Staff email notifications are deferred; `RESEND_API_KEY` is not used by this implementation.
 
@@ -147,9 +148,9 @@ Before deploying:
 - Emergency phone numbers are unverified. `VERIFY_BEFORE_DEMO` stays in configuration and is never presented as a phone number. The verified-contact acceptance check remains pending.
 - Committee participation, checking frequency, production readiness, and sensitive public-update policy are unconfirmed.
 - Anonymous reporting, evidence uploads, email/SMS/push notifications, patrol-entry UI, rejection-reason enforcement/duplicate linking, maps/GPS, analytics, and university integrations are deferred per the brief.
-- Rate limiting is a stretch requirement and is not yet implemented. Basic validation/origin checks do not replace it.
+- Database-backed login, registration, report and API limits are implemented. Hosting needs trusted proxy and edge protection configuration; see [security details](docs/security.md).
 - Student pages refresh on navigation; only the staff queue polls. Confidential reports expose category/urgency/time to channel staff as explicitly required by the brief.
-- Per-user server sessions are eight hours. Account recovery, suspension UI, and staff-account management are not in the MVP source.
+- Sessions expire after 30 minutes idle or eight hours absolute; operators can revoke sessions or disable accounts using `account:manage`. Email verification, recovery, staff SSO/MFA and an account management UI are not implemented.
 
 # SWEP-project
 
@@ -168,3 +169,7 @@ CAMPUS_DISABLE_BUILD_CACHE=1 npm run build
 ```
 
 Normal development caching is unchanged. `.env`, the SQLite file, dependencies, and source files were preserved.
+
+## Security update (27 October 2026)
+
+The local security migration adds persistent rate counters, revocable login sessions, account activation and session version fields. Request size/type/origin checks, private API responses, stronger new passwords, nonce CSP and HTTPS security headers are implemented. See [SECURITY_GATES.md](SECURITY_GATES.md) for validation evidence and [docs/security.md](docs/security.md) for configuration and outstanding real-use requirements. This remains a fictional local demo.

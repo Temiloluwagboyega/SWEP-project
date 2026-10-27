@@ -218,6 +218,9 @@ for (const match of allCss.matchAll(/var\((--[\w-]+)\)/g))
   const { ApiError } = load("src/lib/http/errors.ts");
   const { checkOrigin } = load("src/lib/http/origin.ts", {
     "./errors": { ApiError },
+    "../security/config": {
+      readSecurityConfig: () => ({ origin: "https://campus.example" }),
+    },
   });
   checkOrigin(
     new Request("https://campus.example/api/reports", {

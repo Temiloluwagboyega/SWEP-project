@@ -13,10 +13,12 @@ enum Role {
   SECURITY
   SUPERVISOR
 }
+
 enum Channel {
   COMMITTEE
   SECURITY
 }
+
 enum Category {
   THEFT
   PHONE_THEFT
@@ -28,6 +30,7 @@ enum Category {
   SAFETY_HAZARD
   OTHER
 }
+
 enum Status {
   SUBMITTED
   UNDER_REVIEW
@@ -39,15 +42,18 @@ enum Status {
 }
 
 model User {
-  id           String        @id @default(cuid())
-  name         String
-  email        String        @unique
-  passwordHash String
-  role         Role          @default(STUDENT)
-  createdAt    DateTime      @default(now())
-  reports      Report[]      @relation("Reporter")
-  assigned     Report[]      @relation("Assignee")
-  events       StatusEvent[]
+  id             String         @id @default(cuid())
+  name           String
+  email          String         @unique
+  passwordHash   String
+  role           Role           @default(STUDENT)
+  createdAt      DateTime       @default(now())
+  isActive       Boolean        @default(true)
+  sessionVersion Int            @default(0)
+  sessions       LoginSession[]
+  reports        Report[]       @relation("Reporter")
+  assigned       Report[]       @relation("Assignee")
+  events         StatusEvent[]
 }
 
 model Location {
@@ -77,6 +83,7 @@ model Report {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
   events       StatusEvent[]
+
   @@index([channel, status])
   @@index([reporterId])
 }
@@ -98,4 +105,25 @@ model StatusEvent {
 
 model ReferenceSequence {
   id Int @id @default(autoincrement())
+}
+
+model RateLimitBucket {
+  id        String   @id
+  count     Int      @default(1)
+  expiresAt DateTime
+
+  @@index([expiresAt])
+}
+
+model LoginSession {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  expiresAt  DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([lastSeenAt])
 }

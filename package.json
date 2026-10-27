@@ -10,11 +10,13 @@
     "db:generate": "prisma generate",
     "db:setup": "prisma migrate deploy && node --import tsx prisma/seed.ts",
     "db:seed": "node --import tsx prisma/seed.ts",
-    "test": "node --import tsx --test tests/integration.test.ts && node -e \"console.log('INTEGRATION_PASSED')\"",
+    "test": "node --import tsx --test tests/integration.test.ts tests/security.test.ts && node -e \"console.log('INTEGRATION_PASSED')\"",
     "test:e2e": "playwright test && node -e \"console.log('BROWSER_PASSED')\"",
     "check:syntax": "node scripts/check-syntax.cjs",
     "check:access": "node scripts/check-access.cjs",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "env:setup": "node scripts/setup-env.cjs",
+    "account:manage": "node scripts/manage-account.cjs"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",

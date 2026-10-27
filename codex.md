@@ -63,7 +63,7 @@ Required: contacts on every page; student registration/login; incident form; cha
 - Emergency strip on every page directs students in danger to call/go to QRS, Senate Building.
 - Display: “This app is not monitored 24/7. For emergencies, call the QRS directly.”
 - `/contacts` reads verified contacts from `src/config/contacts.ts`. Verified phone numbers become `tel:` links. Until verified, keep `VERIFY_BEFORE_DEMO` in configuration and display only the contact name/location. Never render the placeholder as a working number or invent a number.
-- Registration fields: name, email, password (minimum eight characters). Always create `STUDENT`, irrespective of client-supplied roles. Passwords use bcrypt, cost 10 or higher.
+- Registration fields: name, email, password (brief minimum eight characters; current security hardening requires at least 15 for new registrations). Always create `STUDENT`, irrespective of client-supplied roles. Passwords use bcrypt, cost 10 or higher.
 - Seed staff accounts; no public staff registration or general admin role. Login sends students to `/reports`, staff to `/staff`.
 
 ### Report form and student tracking
@@ -310,3 +310,11 @@ Strict TypeScript and all seven database integration tests pass. The tsx CLI's l
 The first production build ran out of disk while writing caches. Only this task's temporary preview runtime and `.next/cache` were removed. `CAMPUS_DISABLE_BUILD_CACHE=1 npm run build` then passed, compiling app pages and API routes. The optional config flag leaves ordinary development caching unchanged.
 
 Playwright cannot start its web server because this session cannot listen on `127.0.0.1:3000` (`EPERM`). Do not claim a live login/browser/polling test, running server, cloud migration or deployment. The user can start the app via `npm run dev` in their normal terminal. `docs/verification-status.md`, GATES.md and DESIGN_GATES.md record the latest status; earlier npm-blocked log entries are historical.
+
+## Security implementation — 27 October 2026
+
+`AUTH_SECRET` is mandatory and locally present in private ignored `.env`; `npm run env:setup` safely generates missing/weak secrets without printing them or replacing a valid one. APP_ENV local is localhost-only. Hosted production requires explicit HTTPS and PostgreSQL configuration; SQLite migrations remain local-only.
+
+Persistent HMAC-keyed database rate limits cover account/IP login, registration, new reports and API operations. Proxy IP headers are ignored unless explicitly configured for a trusted proxy that overwrites them. Login JWTs require a database LoginSession with 30-minute idle and eight-hour absolute expiry; user activation/sessionVersion are checked. Signout removes the current session. Operator CLI can disable/enable accounts or revoke all their sessions. New registration passwords require 15 characters, capped at 72 UTF-8 bytes.
+
+Custom JSON/auth bodies are capped at 16/8 KiB; mutation origins and Auth.js CSRF are enforced. API/auth responses are no-store. Page CSP uses fresh per-response nonces, HTTPS enables secure cookies/HSTS, and security headers constrain browser capabilities. Security tests exercise real Auth.js handlers directly without a listening server. Full browser nonce/hydration and flows still need browser acceptance. Use docs/security.md and SECURITY_GATES.md for exact controls/evidence; do not infer production readiness, email verification/recovery, SSO/MFA, cloud PostgreSQL or operational monitoring.

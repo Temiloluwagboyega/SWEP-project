@@ -38,9 +38,17 @@ async function main() {
           ],
         },
       },
-      select: { email: true, role: true },
+      select: { email: true, role: true, isActive: true, sessionVersion: true },
     });
     assert.equal(accounts.length, 7);
+    assert.ok(
+      accounts.every(
+        (u) =>
+          typeof u.isActive === "boolean" && Number.isInteger(u.sessionVersion),
+      ),
+    );
+    await db.loginSession.count();
+    await db.rateLimitBucket.count();
     assert.equal(
       accounts.find((u) => u.email === "supervisor@demo.test").role,
       "SUPERVISOR",
@@ -48,6 +56,7 @@ async function main() {
     const migrations =
       await db.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations" ORDER BY started_at DESC LIMIT 1`;
     assert.equal(migrations.length, 1);
+    assert.match(migrations[0].migration_name, /_security_controls$/);
     assert.ok(migrations[0].finished_at);
     assert.equal(migrations[0].rolled_back_at, null);
     assert.ok(

@@ -42,9 +42,11 @@ export function AuthForm({ register = false }: { register?: boolean }) {
       });
       if (result?.error) {
         setError(
-          register
-            ? "Account created. Please sign in to continue."
-            : "Email or password is incorrect. Check your details and try again.",
+          result.code === "rate_limited"
+            ? "Too many sign-in attempts. Please wait 15 minutes and try again."
+            : register
+              ? "Account created. Please sign in to continue."
+              : "Email or password is incorrect. Check your details and try again.",
         );
         return;
       }
@@ -114,9 +116,9 @@ export function AuthForm({ register = false }: { register?: boolean }) {
             type={visible ? "text" : "password"}
             autoComplete={register ? "new-password" : "current-password"}
             placeholder={
-              register ? "At least 8 characters…" : "Enter your password…"
+              register ? "At least 15 characters…" : "Enter your password…"
             }
-            minLength={8}
+            minLength={register ? 15 : 8}
             required
           />
           <button

@@ -1,5 +1,6 @@
 import { Prisma, type Status } from "@prisma/client";
 import { db } from "./db";
+import { consumeLimit } from "./security/rate-limit";
 import { ApiError } from "./http/errors";
 import {
   canEdit,
@@ -103,6 +104,7 @@ export async function getReport(user: SessionUser, key: string) {
 export async function createReport(user: SessionUser, input: unknown) {
   if (user.role !== "STUDENT") denied();
   const data = reportSchema.parse(input);
+  await consumeLimit("report", user.id);
   return db.$transaction(async (tx) => {
     await locationExists(tx, data.locationId);
     const sequence = await tx.referenceSequence.create({ data: {} });
@@ -216,7 +218,7 @@ export async function assignReport(
     if (report.status !== "UNDER_REVIEW")
       throw new ApiError(409, "Review this report before assigning a handler.");
     const handler = await tx.user.findUnique({ where: { id: assigneeId } });
-    if (!handler || staffChannel(handler) !== channel)
+    if (!handler || !handler.isActive || staffChannel(handler) !== channel)
       throw new ApiError(400, "Choose a handler in this channel.");
     await lockedUpdate(tx, report, { assigneeId, status: "ASSIGNED" });
     await tx.statusEvent.create({
