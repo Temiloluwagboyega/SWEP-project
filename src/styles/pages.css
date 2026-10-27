@@ -330,7 +330,7 @@
 .auth-panel-heading {
   margin-bottom: 28px;
 }
-.auth-panel h2 {
+.auth-panel-heading h2 {
   font-size: 1.5rem;
   line-height: 1.4;
 }
@@ -1181,7 +1181,7 @@
   .auth-panel {
     padding: 24px;
   }
-  .auth-panel h2 {
+  .auth-panel-heading h2 {
     font-size: 1.3rem;
   }
   .contact-grid {
