@@ -2,17 +2,26 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
+import {
+  ArrowUpRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  User,
+} from "lucide-react";
 import { loginSchema, registerSchema } from "@/lib/validation";
 import { HttpError, request } from "@/lib/http/client";
 import { Button } from "@/components/ui/button";
 import { ErrorSummary } from "@/components/ui/error-summary";
 import { brand } from "@/config/brand";
+
 export function AuthForm({ register = false }: { register?: boolean }) {
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [visible, setVisible] = useState(false);
+
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
@@ -63,6 +72,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
       setBusy(false);
     }
   }
+
   function fieldProps(name: string) {
     return {
       id: name,
@@ -71,6 +81,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
       "aria-describedby": fields[name] ? `${name}-error` : undefined,
     };
   }
+
   function fieldError(name: string) {
     return fields[name] ? (
       <p className="field-error" id={`${name}-error`}>
@@ -78,40 +89,48 @@ export function AuthForm({ register = false }: { register?: boolean }) {
       </p>
     ) : null;
   }
+
   return (
     <form className="form-stack" noValidate onSubmit={submit}>
       <ErrorSummary message={error} fields={fields} />
       {register && (
         <div className="form-field">
           <label htmlFor="name">Full name</label>
-          <input
-            {...fieldProps("name")}
-            autoComplete="name"
-            placeholder="Your full name…"
-            required
-            maxLength={100}
-          />
+          <div className="input-with-icon">
+            <User aria-hidden="true" size={18} className="field-icon-left" />
+            <input
+              {...fieldProps("name")}
+              autoComplete="name"
+              placeholder="Your full name…"
+              required
+              maxLength={100}
+            />
+          </div>
           {fieldError("name")}
         </div>
       )}
       <div className="form-field">
         <label htmlFor="email">Email address</label>
-        <input
-          {...fieldProps("email")}
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          autoCapitalize="none"
-          spellCheck={false}
-          placeholder="you@example.com"
-          required
-          maxLength={254}
-        />
+        <div className="input-with-icon">
+          <Mail aria-hidden="true" size={18} className="field-icon-left" />
+          <input
+            {...fieldProps("email")}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            autoCapitalize="none"
+            spellCheck={false}
+            placeholder="you@example.com"
+            required
+            maxLength={254}
+          />
+        </div>
         {fieldError("email")}
       </div>
       <div className="form-field">
         <label htmlFor="password">Password</label>
-        <div className="password-field">
+        <div className="input-with-icon password-field">
+          <LockKeyhole aria-hidden="true" size={18} className="field-icon-left" />
           <input
             {...fieldProps("password")}
             type={visible ? "text" : "password"}
@@ -146,7 +165,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
           : register
             ? "Create student account"
             : "Sign in"}
-        <ArrowRight aria-hidden="true" size={18} />
+        <ArrowUpRight aria-hidden="true" size={18} />
       </Button>
       <p className="auth-switch">
         {register ? "Already have an account?" : `New to ${brand.name}?`}{" "}
