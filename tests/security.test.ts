@@ -2,9 +2,6 @@ import "dotenv/config";
 import { test, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { hash } from "bcryptjs";
 import { NextRequest } from "next/server";
@@ -15,7 +12,7 @@ import { boundedText, readJson } from "../src/lib/http/body";
 import { checkOrigin } from "../src/lib/http/origin";
 import { contentSecurityPolicy } from "../src/lib/security/headers";
 import { registerSchema, loginSchema } from "../src/lib/validation";
-let db: PrismaClient, temp: string, userId: string;
+let db: PrismaClient, schema: string | undefined, userId: string;
 let limiter: typeof import("../src/lib/security/rate-limit");
 let sessions: typeof import("../src/lib/security/sessions");
 let authRoute: typeof import("../src/app/api/auth/[...nextauth]/route");
@@ -29,8 +26,13 @@ async function status(promise: Promise<unknown>, code: number) {
   );
 }
 before(async () => {
-  temp = await mkdtemp(path.join(tmpdir(), "campus-hardening-"));
-  process.env.DATABASE_URL = `file:${path.join(temp, "test.db")}`;
+  const base = process.env.TEST_DATABASE_URL;
+  assert.ok(base, "Set TEST_DATABASE_URL to a PostgreSQL database for tests");
+  // A throwaway schema keeps tests isolated from the demo data in the same database.
+  schema = `test_${randomBytes(6).toString("hex")}`;
+  const url = new URL(base);
+  url.searchParams.set("schema", schema);
+  process.env.DATABASE_URL = process.env.DATABASE_URL_UNPOOLED = url.toString();
   process.env.AUTH_SECRET = randomBytes(48).toString("base64url");
   process.env.AUTH_URL = origin;
   process.env.APP_ENV = "local";
@@ -65,8 +67,10 @@ beforeEach(async () => {
   });
 });
 after(async () => {
-  if (db) await db.$disconnect();
-  if (temp) await rm(temp, { recursive: true, force: true });
+  if (db) {
+    if (schema) await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
+    await db.$disconnect();
+  }
 });
 
 test("configuration rejects weak keys and unsafe production origins/databases", () => {
@@ -74,7 +78,7 @@ test("configuration rejects weak keys and unsafe production origins/databases", 
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: origin,
     APP_ENV: "local",
-    DATABASE_URL: "file:./dev.db",
+    DATABASE_URL: "mysql://fixture.invalid/db",
   };
   assert.equal(readSecurityConfig(valid).origin, origin);
   for (const secret of [

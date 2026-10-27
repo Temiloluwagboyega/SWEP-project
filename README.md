@@ -2,7 +2,7 @@
 
 A Smart Campus Security and Emergency Response System course prototype for Obafemi Awolowo University, Ile-Ife. Students choose the Student Union Security Committee or Official University Security, submit a report, and follow its status. Staff see only their own channel and permitted confidential information.
 
-The controlling requirements are summarised in [codex.md](codex.md). Dependencies are installed, the initial local SQLite migration is applied, and fictional demo data is seeded. Strict TypeScript checking and the incident lifecycle integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
+The controlling requirements are summarised in [codex.md](codex.md). The app uses PostgreSQL (Neon) through Prisma with reviewed migrations in `prisma/migrations/`, plus a fictional demo seed. Strict TypeScript checking and the incident lifecycle integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
 
 For the latest download/test retry and the precise email, database, contact, and hosting requirements, see [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md).
 
@@ -23,7 +23,9 @@ npm run db:setup
 npm run dev
 ```
 
-Open `http://localhost:3000`. The local fallback is SQLite at `prisma/dev.db`; the initial schema is recorded in `prisma/migrations/20261026132333_init/migration.sql`. Reports persist across process restarts. `db:setup` applies saved migrations and seeds fictional data. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
+`db:setup` needs `DATABASE_URL` and `DATABASE_URL_UNPOOLED` pointing at a PostgreSQL database. The deployment uses Neon through Vercel Storage; for local work, use a separate Neon development branch, never the production database. Get the connection strings from Vercel → Storage → the database → **Open in Neon**.
+
+Open `http://localhost:3000`. Reports persist in PostgreSQL across server restarts. The seed command preserves existing reports rather than deleting them. It is disabled when `NODE_ENV=production`.
 
 If you use a different local host or port, update `AUTH_URL`. Keep browser requests on the same origin as the server.
 
@@ -67,7 +69,8 @@ src/lib/status.ts         Allowed status transitions
 src/lib/http/             Browser requests, backend errors, origin, responses
 src/styles/               Tokens, base, layout, shared components, page styles
 src/config/contacts.ts    Pending/verified contact configuration
-prisma/schema.prisma      Local SQLite schema
+prisma/schema.prisma      PostgreSQL schema
+prisma/migrations/        Reviewed migrations applied with `prisma migrate deploy`
 prisma/seed.ts             Non-destructive fictional demo seed
 scripts/check-syntax.cjs   Offline syntax check with malformed-code control
 tests/integration.test.ts  Database-backed lifecycle/privacy tests
@@ -80,13 +83,15 @@ The API is routed by `src/app/api/[...path]/route.ts`; Auth.js has its own more-
 
 | Variable          | Purpose                                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| `DATABASE_URL`    | Local: `file:./dev.db`. Production: a configured PostgreSQL connection after changing the Prisma provider.             |
+| `DATABASE_URL`    | Pooled PostgreSQL connection (set automatically by the Neon integration on Vercel).                                    |
+| `DATABASE_URL_UNPOOLED` | Direct PostgreSQL connection, used by Prisma for migrations.                                                     |
+| `TEST_DATABASE_URL` | PostgreSQL database for integration tests; each run creates and drops its own schema.                                |
 | `AUTH_SECRET`     | Unique random secret; required for secure sessions.                                                                    |
 | `AUTH_URL`        | Canonical application origin, locally `http://localhost:3000`.                                                         |
-| `APP_ENV` | `local` for the localhost SQLite demo; `production` requires public HTTPS and PostgreSQL. |
+| `APP_ENV` | `local` for the localhost demo; `production` requires public HTTPS. |
 | `TRUSTED_CLIENT_IP_HEADER` | Optional single-IP header overwritten by a trusted reverse proxy. Leave empty locally. |
 
-Do not log secrets, session contents, incident descriptions, or database error payloads. Staff email notifications are deferred; `RESEND_API_KEY` is not used by this implementation.
+Do not log secrets, session contents, incident descriptions, or database error payloads. Optional email notifications use SMTP (`SMTP_USER`, `SMTP_PASS`, optional `SMTP_HOST`, `SMTP_PORT`, `EMAIL_FROM`); emails contain only the reference, status and a sign-in link, never incident details.
 
 ## Checks
 
@@ -100,7 +105,7 @@ npm test
 npm run build
 ```
 
-Integration tests create and remove an isolated temporary SQLite database. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
+Integration tests create and drop an isolated temporary schema in the PostgreSQL database named by `TEST_DATABASE_URL`. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
 
 For browser checks, initialise the local demo database, install the browser, then run:
 
@@ -126,7 +131,7 @@ The syntax check works with local TypeScript or the current machine's global Typ
 4. **Internal history:** added immutable `StatusEvent.actorChannel` for accurate attribution and channel-specific internal notes after transfer. It is additional security/integrity metadata, not a new product feature. Reporter-created events are labelled “Reporter”. No staff identities are exposed to students.
 5. **References:** added a database autoincrement `ReferenceSequence`; the sequence is global, with the current UTC year in the reference prefix, rather than an unspecified annual reset.
 6. **Confidential queues:** strict metadata allowlist overrides general queue columns, including hiding location and assignee. Links use the already-permitted reference when the internal ID is redacted.
-7. **Local database:** no cloud database credentials were supplied, so the brief's SQLite fallback is used for local development. PostgreSQL remains the deployment target.
+7. **Database:** PostgreSQL (Neon, provisioned through Vercel Storage) for both deployment and local development. The earlier SQLite fallback has been removed.
 8. **Queue size:** list responses return up to 200 reports, prioritised according to the brief. Pagination beyond the course-demo scale is not implemented.
 
 ## Deployment prerequisites
@@ -136,9 +141,9 @@ This app is designed for a Node.js host such as Vercel, following the brief. It 
 Before deploying:
 
 1. Install dependencies, generate and commit a reviewed lockfile, and pass type, integration, build, and browser checks.
-2. Provision PostgreSQL (for example, Neon or Supabase) and configure its `DATABASE_URL`. PostgreSQL needs its own schema/provider and migration history; do not apply the saved SQLite migration SQL or its migration lock to PostgreSQL. Configure Prisma generation and the deployment build to use the selected PostgreSQL schema, generate/review its migration, apply it to staging, and rerun the database checks there. This cloud configuration has not been created yet.
+2. Attach a Neon database to the Vercel project (Storage tab), which sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`. Migrations in `prisma/migrations/` are applied by `prisma migrate deploy`. `db:setup` also seeds demo accounts and is a local convenience only.
 3. Configure a fresh `AUTH_SECRET`, canonical HTTPS `AUTH_URL`, and secure host/session settings. Do not seed shared demo passwords into real-use environments. Default Auth.js production cookies require HTTPS.
-4. Configure the deployment build as `npm run build`, and apply reviewed migrations as an explicit deployment step. Run staging tests again with PostgreSQL; passing SQLite checks does not prove PostgreSQL deployment behaviour.
+4. Vercel runs the `vercel-build` script, which applies pending migrations (`prisma migrate deploy`) and then runs `npm run build`.
 5. Verify QRS/contact information, finalise locations, agree queue-monitoring responsibilities, and review the confidential intake/referral assumptions with stakeholders.
 6. Obtain university approval and agree retention/deletion, backups/restoration, access reviews, incident handling and recovery procedures before accepting real incident data.
 
@@ -160,7 +165,7 @@ See [the design and folder guide](docs/design-upgrade.md), [brand direction](doc
 
 ## Migration and low-disk commands
 
-`npm run db:setup` applies saved **SQLite** migrations and seeds the local demo. After changing the local Prisma schema, create a new development migration with `npm run db:migrate -- --name describe_change`. Do not reset an existing database merely to re-run setup. Integration tests continue to create a disposable schema in their own temporary database.
+`npm run db:setup` applies saved PostgreSQL migrations and seeds the demo data. After changing the local Prisma schema, create a new development migration with `npm run db:migrate -- --name describe_change`. Do not reset an existing database merely to re-run setup. Integration tests create a disposable schema in `TEST_DATABASE_URL` and drop it afterwards.
 
 The first build exhausted available disk while writing Webpack/TypeScript caches. Only task-generated temporary preview packages and `.next/cache` were removed. The following opt-in mode disables the production Webpack cache and completed successfully:
 
@@ -168,7 +173,7 @@ The first build exhausted available disk while writing Webpack/TypeScript caches
 CAMPUS_DISABLE_BUILD_CACHE=1 npm run build
 ```
 
-Normal development caching is unchanged. `.env`, the SQLite file, dependencies, and source files were preserved.
+Normal development caching is unchanged. `.env`, dependencies, and source files were preserved.
 
 ## Security update (27 October 2026)
 

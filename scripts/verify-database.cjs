@@ -5,7 +5,7 @@ const path = require("node:path");
 const { PrismaClient } = require("@prisma/client");
 async function main() {
   assert.ok(
-    process.env.DATABASE_URL?.startsWith("file:"),
+    process.env.APP_ENV === "local" && process.env.NODE_ENV !== "production",
     "This check is only for the local fictional demo database.",
   );
   const db = new PrismaClient();

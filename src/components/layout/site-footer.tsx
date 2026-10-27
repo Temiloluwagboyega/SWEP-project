@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
+import { brand } from "@/config/brand";
 export function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -7,7 +8,7 @@ export function SiteFooter() {
         <div>
           <p className="footer-brand">
             <ShieldCheck aria-hidden="true" size={20} />
-            CampusGuard
+            {brand.name}
           </p>
           <p>Campus incident reporting and follow-up.</p>
         </div>

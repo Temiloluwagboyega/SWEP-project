@@ -16,24 +16,20 @@ import {
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
 type Account = { name?: string | null; role: string } | null;
-function selected(path: string, href: string) {
-  return href === "/"
-    ? path === "/"
-    : path === href || path.startsWith(`${href}/`);
+// Signed-in portal pages use the sidebar for navigation instead of the public header.
+function inPortal(path: string, account: Account) {
+  return (
+    !!account &&
+    (path.startsWith("/reports") ||
+      path.startsWith("/report/") ||
+      path.startsWith("/staff"))
+  );
 }
-export function SiteHeader({ account }: { account: Account }) {
+function useMenu() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
   const toggle = useRef<HTMLButtonElement>(null);
-  const staff = !!account && account.role !== "STUDENT";
-  const items = [
-    { href: "/", label: "Overview" },
-    {
-      href: staff ? "/staff" : "/reports",
-      label: staff ? "Staff queue" : "My reports",
-    },
-    { href: "/contacts", label: "Get help" },
-  ];
+  useEffect(() => setOpen(false), [path]);
   useEffect(() => {
     if (!open) return;
     const escape = (event: KeyboardEvent) => {
@@ -45,6 +41,53 @@ export function SiteHeader({ account }: { account: Account }) {
     document.addEventListener("keydown", escape);
     return () => document.removeEventListener("keydown", escape);
   }, [open]);
+  return { path, open, setOpen, toggle };
+}
+function MenuButton({
+  menu,
+  controls,
+  className,
+}: {
+  menu: ReturnType<typeof useMenu>;
+  controls: string;
+  className: string;
+}) {
+  return (
+    <button
+      ref={menu.toggle}
+      type="button"
+      className={`icon-button ${className}`}
+      aria-label={menu.open ? "Close navigation" : "Open navigation"}
+      aria-expanded={menu.open}
+      aria-controls={controls}
+      onClick={() => menu.setOpen(!menu.open)}
+    >
+      {menu.open ? (
+        <X aria-hidden="true" size={22} />
+      ) : (
+        <Menu aria-hidden="true" size={22} />
+      )}
+    </button>
+  );
+}
+function selected(path: string, href: string) {
+  return href === "/"
+    ? path === "/"
+    : path === href || path.startsWith(`${href}/`);
+}
+export function SiteHeader({ account }: { account: Account }) {
+  const menu = useMenu();
+  const { path, open, setOpen } = menu;
+  const staff = !!account && account.role !== "STUDENT";
+  const items = [
+    { href: "/", label: "Overview" },
+    {
+      href: staff ? "/staff" : "/reports",
+      label: staff ? "Staff queue" : "My reports",
+    },
+    { href: "/contacts", label: "Get help" },
+  ];
+  if (inPortal(path, account)) return null;
   return (
     <header className="site-header">
       <div className="shell nav-inner">
@@ -78,21 +121,11 @@ export function SiteHeader({ account }: { account: Account }) {
               <ArrowUpRight aria-hidden="true" size={16} />
             </Link>
           )}
-          <button
-            ref={toggle}
-            type="button"
-            className="icon-button menu-toggle"
-            aria-label={open ? "Close navigation" : "Open navigation"}
-            aria-expanded={open}
-            aria-controls="mobile-navigation"
-            onClick={() => setOpen(!open)}
-          >
-            {open ? (
-              <X aria-hidden="true" size={22} />
-            ) : (
-              <Menu aria-hidden="true" size={22} />
-            )}
-          </button>
+          <MenuButton
+            menu={menu}
+            controls="mobile-navigation"
+            className="menu-toggle"
+          />
         </div>
       </div>
       <nav
@@ -123,13 +156,25 @@ export function AppShell({
   account: Account;
   children: ReactNode;
 }) {
-  const path = usePathname();
-  const portal =
-    account &&
-    (path.startsWith("/reports") ||
-      path.startsWith("/report/") ||
-      path.startsWith("/staff"));
-  if (!portal) return <>{children}</>;
+  const menu = useMenu();
+  const { path } = menu;
+  useEffect(() => {
+    const top = document.querySelector(".top-bar");
+    if (!top) return;
+    const update = () =>
+      document.documentElement.style.setProperty(
+        "--top-bar-height",
+        `${top.getBoundingClientRect().height}px`,
+      );
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(top);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--top-bar-height");
+    };
+  }, []);
+  if (!account || !inPortal(path, account)) return <>{children}</>;
   const staff = account.role !== "STUDENT";
   const links = staff
     ? [
@@ -143,48 +188,71 @@ export function AppShell({
       ];
   return (
     <div className="shell portal-shell">
-      <aside className="portal-sidebar">
-        <div className="portal-identity">
-          <ShieldCheck aria-hidden="true" size={23} />
-          <div>
-            <strong>
-              {staff
-                ? account.role === "COMMITTEE"
-                  ? "Committee portal"
-                  : "Security portal"
-                : "Student portal"}
-            </strong>
-            <small>
-              {staff ? "Manage your channel’s reports" : "Report and follow up"}
-            </small>
+      <aside className="portal-sidebar" data-open={menu.open || undefined}>
+        <div className="portal-bar">
+          <Brand inverse />
+          <MenuButton
+            menu={menu}
+            controls="portal-panel"
+            className="portal-menu-toggle"
+          />
+        </div>
+        <div className="portal-panel" id="portal-panel">
+          <div className="portal-identity">
+            <ShieldCheck aria-hidden="true" size={23} />
+            <div>
+              <strong>
+                {staff
+                  ? account.role === "COMMITTEE"
+                    ? "Committee portal"
+                    : "Security portal"
+                  : "Student portal"}
+              </strong>
+              <small>
+                {staff
+                  ? "Manage your channel’s reports"
+                  : "Report and follow up"}
+              </small>
+            </div>
           </div>
-        </div>
-        <nav aria-label="Portal navigation">
-          {links.map((item) => (
-            <Link
-              href={item.href}
-              key={item.href}
-              aria-current={selected(path, item.href) ? "page" : undefined}
-            >
-              <item.icon aria-hidden="true" size={19} />
-              {item.label}
+          <nav aria-label="Portal navigation">
+            {links.map((item) => (
+              <Link
+                href={item.href}
+                key={item.href}
+                onClick={() => menu.setOpen(false)}
+                aria-current={selected(path, item.href) ? "page" : undefined}
+              >
+                <item.icon aria-hidden="true" size={19} />
+                {item.label}
+              </Link>
+            ))}
+            <Link href="/">
+              <Home aria-hidden="true" size={19} />
+              Back to overview
             </Link>
-          ))}
-          <Link href="/">
-            <Home aria-hidden="true" size={19} />
-            Back to overview
-          </Link>
-        </nav>
-        <div className="sidebar-note">
-          <LockKeyhole aria-hidden="true" size={19} />
-          <strong>Private by default</strong>
-          <p>
-            {staff
-              ? "Access is limited to your channel and permitted case details."
-              : "Other students cannot see your reports."}
-          </p>
+          </nav>
+          <div className="sidebar-note">
+            <LockKeyhole aria-hidden="true" size={19} />
+            <strong>Private by default</strong>
+            <p>
+              {staff
+                ? "Access is limited to your channel and permitted case details."
+                : "Other students cannot see your reports."}
+            </p>
+          </div>
+          <div className="portal-account">
+            <span className="avatar" aria-hidden="true">
+              {account.name?.slice(0, 1) ?? "U"}
+            </span>
+            <span className="account-name">
+              {account.name}
+              <small>{staff ? "Responder" : "Student"}</small>
+            </span>
+            <SignOutButton />
+          </div>
+          <span className="prototype-label">OAU course project</span>
         </div>
-        <span className="prototype-label">OAU course project</span>
       </aside>
       <div className="portal-content">{children}</div>
     </div>

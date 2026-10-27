@@ -10,6 +10,7 @@ import { readJson } from "@/lib/http/body";
 import { clientAddress, consumeLimit } from "@/lib/security/rate-limit";
 import { privateResponse } from "@/lib/http/response";
 import { registerSchema } from "@/lib/validation";
+import { sendWelcome } from "@/lib/email";
 import {
   listReports,
   getReport,
@@ -49,6 +50,7 @@ async function route(request: Request, context: Context) {
           role: "STUDENT",
         },
       });
+      await sendWelcome(data.email);
       return NextResponse.json({ success: true }, { status: 201 });
     }
     const user = await getSessionUser();

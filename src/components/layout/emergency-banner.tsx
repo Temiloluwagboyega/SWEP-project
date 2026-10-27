@@ -4,22 +4,30 @@ import { contacts } from "@/config/contacts";
 export function EmergencyBanner() {
   const qrs = contacts[0];
   return (
-    <div className="emergency-strip">
+    <div className="emergency-strip" role="region" aria-label="Emergency help">
       <div className="shell emergency-inner">
         <div>
-          <Siren aria-hidden="true" size={18} />
+          <span className="emergency-pulse" aria-hidden="true">
+            <Siren size={18} />
+          </span>
           <span>
-            <strong>In danger now?</strong> Go directly to the QRS, Senate
-            Building.
+            <strong>In danger now?</strong>{" "}
+            <span className="emergency-detail">
+              Go directly to the QRS, Senate Building.
+            </span>
           </span>
         </div>
-        <Link href="/contacts">
-          Emergency contacts
-          <ArrowUpRight aria-hidden="true" size={16} />
-        </Link>
-        {qrs.verified && qrs.phone !== "VERIFY_BEFORE_DEMO" && (
-          <a href={`tel:${qrs.phone}`}>Call QRS</a>
-        )}
+        <div className="emergency-actions">
+          {qrs.verified && qrs.phone !== "VERIFY_BEFORE_DEMO" && (
+            <a className="emergency-cta" href={`tel:${qrs.phone}`}>
+              Call QRS
+            </a>
+          )}
+          <Link className="emergency-cta" href="/contacts">
+            Get help
+            <ArrowUpRight aria-hidden="true" size={16} />
+          </Link>
+        </div>
       </div>
     </div>
   );

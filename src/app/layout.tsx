@@ -4,10 +4,11 @@ import { AppShell, SiteHeader } from "@/components/layout/app-shell";
 import { EmergencyBanner } from "@/components/layout/emergency-banner";
 import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
+import { brand } from "@/config/brand";
 export const metadata: Metadata = {
   title: {
-    default: "CampusGuard · OAU Campus Security",
-    template: "%s · CampusGuard",
+    default: `${brand.name} · ${brand.tagline}`,
+    template: `%s · ${brand.name}`,
   },
   description:
     "Report a campus incident, find security contacts, and follow your report at Obafemi Awolowo University.",
@@ -27,8 +28,10 @@ export default async function RootLayout({
         <a className="skip-link" href="#main">
           Skip to content
         </a>
-        <EmergencyBanner />
-        <SiteHeader account={account} />
+        <div className="top-bar">
+          <EmergencyBanner />
+          <SiteHeader account={account} />
+        </div>
         <main id="main">
           <AppShell account={account}>{children}</AppShell>
         </main>

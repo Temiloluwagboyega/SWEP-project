@@ -33,27 +33,21 @@ try {
         "Generated a new AUTH_SECRET; value is never printed. Existing sessions must sign in again.",
       );
     }
-    if (!values.DATABASE_URL) set("DATABASE_URL", "file:./dev.db");
     if (!values.AUTH_URL) set("AUTH_URL", "http://localhost:3000");
     if (!values.APP_ENV)
       set(
         "APP_ENV",
-        values.DATABASE_URL.startsWith("file:") ? "local" : "production",
+        /^http:\/\/(localhost|127\.0\.0\.1)(:|$)/.test(values.AUTH_URL)
+          ? "local"
+          : "production",
       );
     fs.writeFileSync(filename, text, { mode: 0o600 });
     fs.chmodSync(filename, 0o600);
-    if (values.DATABASE_URL.startsWith("file:")) {
-      const database = path.resolve(
-        root,
-        "prisma",
-        values.DATABASE_URL.slice(5).split("?")[0],
-      );
-      if (!path.relative(root, database).startsWith(".."))
-        for (const suffix of ["", "-wal", "-shm", "-journal"])
-          if (fs.existsSync(database + suffix))
-            fs.chmodSync(database + suffix, 0o600);
-    }
   }
+  if (!/^postgres(ql)?:/.test(values.DATABASE_URL ?? ""))
+    console.warn(
+      "Set DATABASE_URL and DATABASE_URL_UNPOOLED to a PostgreSQL (Neon development branch) connection.",
+    );
   if (!validSecret(values.AUTH_SECRET))
     throw new Error(
       "AUTH_SECRET must be a non-placeholder random secret of at least 32 characters.",

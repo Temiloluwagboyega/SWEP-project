@@ -7,6 +7,7 @@ import { loginSchema, registerSchema } from "@/lib/validation";
 import { HttpError, request } from "@/lib/http/client";
 import { Button } from "@/components/ui/button";
 import { ErrorSummary } from "@/components/ui/error-summary";
+import { brand } from "@/config/brand";
 export function AuthForm({ register = false }: { register?: boolean }) {
   const [error, setError] = useState("");
   const [fields, setFields] = useState<Record<string, string>>({});
@@ -148,7 +149,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
         <ArrowRight aria-hidden="true" size={18} />
       </Button>
       <p className="auth-switch">
-        {register ? "Already have an account?" : "New to CampusGuard?"}{" "}
+        {register ? "Already have an account?" : `New to ${brand.name}?`}{" "}
         <Link href={register ? "/login" : "/register"}>
           {register ? "Sign in" : "Create an account"}
         </Link>

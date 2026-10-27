@@ -1,5 +1,6 @@
 import { ClipboardCheck, LockKeyhole, ShieldCheck } from "lucide-react";
 import type { ReactNode } from "react";
+import { brand } from "@/config/brand";
 export function AuthLayout({
   register = false,
   children,
@@ -50,7 +51,7 @@ export function AuthLayout({
           <h2>
             {register
               ? "Create your student account"
-              : "Sign in to CampusGuard"}
+              : `Sign in to ${brand.name}`}
           </h2>
           <p>
             {register

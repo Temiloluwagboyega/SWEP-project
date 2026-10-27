@@ -622,6 +622,10 @@ input[type="radio"] {
 .empty-page .eyebrow {
   margin: 0;
 }
+.empty-page h1 {
+  font-size: clamp(1.5rem, 2.4vw, 1.875rem);
+  letter-spacing: -0.025em;
+}
 .empty-page p {
   max-width: 60ch;
 }

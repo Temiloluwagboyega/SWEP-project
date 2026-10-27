@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { request } from "@/lib/http/client";
 import type { ReportView } from "@/types/app";
+import { brand } from "@/config/brand";
 export function useStaffQueue(initialReports: ReportView[], mine: boolean) {
   const [reports, setReports] = useState(initialReports);
   const [busy, setBusy] = useState(false);
@@ -63,9 +64,9 @@ export function useStaffQueue(initialReports: ReportView[], mine: boolean) {
     };
   }, [refresh]);
   useEffect(() => {
-    document.title = `${newRefs.length ? `(${newRefs.length}) ` : ""}Staff queue · CampusGuard`;
+    document.title = `${newRefs.length ? `(${newRefs.length}) ` : ""}Staff queue · ${brand.name}`;
     return () => {
-      document.title = "CampusGuard · OAU Campus Security";
+      document.title = `${brand.name} · ${brand.tagline}`;
     };
   }, [newRefs]);
   return {
