@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
+import { ProfileMenu } from "./profile-menu";
 export type Account = { name?: string | null; role: string; email?: string | null } | null;
 // Signed-in portal pages use the sidebar for navigation instead of the public header.
 export function inPortal(path: string, account: Account): boolean {
@@ -223,31 +224,7 @@ function PortalHeader({
             <span>New report</span>
           </Link>
         )}
-        <Link
-          href={staff ? "/staff" : "/profile"}
-          className="portal-header-profile"
-          title={
-            staff
-              ? `Signed in as ${displayName}`
-              : `Signed in as ${displayName} · View profile`
-          }
-        >
-          <span className="avatar portal-header-avatar" aria-hidden="true">
-            {displayName.slice(0, 1).toUpperCase()}
-          </span>
-          <span className="portal-header-text">
-            <span className="portal-header-name">{displayName}</span>
-            <span className="portal-header-badge">
-              {staff
-                ? account.role === "SUPERVISOR"
-                  ? "Supervisor"
-                  : account.role === "COMMITTEE"
-                    ? "Committee"
-                    : "Responder"
-                : "Student"}
-            </span>
-          </span>
-        </Link>
+        <ProfileMenu account={account} />
       </div>
     </header>
   );

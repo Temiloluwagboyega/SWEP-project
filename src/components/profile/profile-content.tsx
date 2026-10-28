@@ -135,7 +135,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
             </div>
           </section>
 
-          <div className="profile-notice-box" role="region" aria-label="Profile updates notice">
+          <div className="profile-notice-box" id="edit" role="region" aria-label="Profile updates notice">
             <div className="profile-notice-header">
               <AlertCircle aria-hidden="true" size={18} />
               <h4>Account modifications & self-service updates</h4>
