@@ -22,6 +22,7 @@
   width: min(720px, 48vw);
   height: min(440px, 45%);
   color: color-mix(in srgb, var(--color-primary) 14%, transparent);
+  z-index: 1;
 }
 .home-bg-wave-tl svg {
   width: 100%;
@@ -30,24 +31,22 @@
 }
 .home-bg-landmark {
   position: absolute;
+  top: 0;
   left: 0;
   bottom: 0;
-  width: min(520px, 40vw);
-  height: min(640px, 80%);
+  width: min(740px, 56vw);
+  height: 100%;
   pointer-events: none;
-  opacity: 0.88;
-  mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.45) 45%, transparent 75%),
-              linear-gradient(to right, black 20%, transparent 80%);
-  mask-composite: intersect;
-  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.45) 45%, transparent 75%),
-                      linear-gradient(to right, black 20%, transparent 80%);
-  -webkit-mask-composite: source-in;
+  z-index: 0;
+  opacity: 0.40;
+  mask-image: linear-gradient(to right, black 60%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 60%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
 }
 .home-bg-landmark-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: left bottom;
+  object-position: left center;
 }
 .home-bg-wave-br {
   position: absolute;
@@ -56,6 +55,7 @@
   width: min(700px, 48vw);
   height: min(560px, 65%);
   pointer-events: none;
+  z-index: 1;
 }
 .home-bg-wave-br svg {
   width: 100%;
@@ -117,7 +117,8 @@
   max-width: 44ch;
   font-size: 1.05rem;
   line-height: 1.65;
-  color: var(--color-muted);
+  color: var(--color-foreground);
+  font-weight: 475;
   margin-top: 20px;
   margin-bottom: 0;
 }
@@ -1269,11 +1270,15 @@
 }
 @media (max-width: 950px) {
   .home-bg-landmark {
-    opacity: 0.16;
-    width: min(320px, 45vw);
-    height: 420px;
-    mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.4) 40%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.4) 40%, transparent 70%);
+    width: min(580px, 75vw);
+    height: 100%;
+    top: 0;
+    bottom: 0;
+    opacity: 0.32;
+    mask-image: linear-gradient(to right, black 55%, rgba(0, 0, 0, 0.4) 80%, transparent 100%),
+                linear-gradient(to bottom, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to right, black 55%, rgba(0, 0, 0, 0.4) 80%, transparent 100%),
+                        linear-gradient(to bottom, black 85%, transparent 100%);
   }
   .home-bg-wave-tl {
     width: min(480px, 60vw);
@@ -1363,14 +1368,13 @@
 }
 @media (max-width: 640px) {
   .home-bg-landmark {
-    opacity: 0.10;
-    width: 220px;
-    height: 260px;
-    bottom: 0;
-    left: 0;
-    top: auto;
-    mask-image: radial-gradient(ellipse at 0% 100%, black 20%, transparent 80%);
-    -webkit-mask-image: radial-gradient(ellipse at 0% 100%, black 20%, transparent 80%);
+    width: 100%;
+    height: min(500px, 65vh);
+    top: 0;
+    bottom: auto;
+    opacity: 0.28;
+    mask-image: linear-gradient(to bottom, black 45%, rgba(0, 0, 0, 0.4) 75%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 45%, rgba(0, 0, 0, 0.4) 75%, transparent 100%);
   }
   .home-bg-wave-tl {
     width: 70vw;
