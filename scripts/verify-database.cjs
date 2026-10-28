@@ -56,7 +56,7 @@ async function main() {
     const migrations =
       await db.$queryRaw`SELECT migration_name, finished_at, rolled_back_at FROM "_prisma_migrations" ORDER BY started_at DESC LIMIT 1`;
     assert.equal(migrations.length, 1);
-    assert.match(migrations[0].migration_name, /_security_controls$/);
+    assert.equal(migrations[0].migration_name, "2_incident_coordinates");
     assert.ok(migrations[0].finished_at);
     assert.equal(migrations[0].rolled_back_at, null);
     assert.ok(

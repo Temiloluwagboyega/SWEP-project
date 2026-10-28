@@ -10,7 +10,7 @@ export const registerSchema = z
       .max(254),
     password: z
       .string()
-      .min(15, "Use at least 15 characters. A passphrase works well.")
+      .min(8, "Use at least 8 characters. A longer passphrase is welcome.")
       .max(72, "This password is too long. Use a shorter password.")
       .refine(
         (value) => new TextEncoder().encode(value).length <= 72,
@@ -29,6 +29,21 @@ export const loginSchema = registerSchema
   })
   .strict();
 const editable = {
+  coordinates: z
+    .object({
+      latitude: z
+        .number({ error: "Enter a latitude between -90 and 90, or remove coordinates." })
+        .min(-90, "Latitude must be between -90 and 90.")
+        .max(90, "Latitude must be between -90 and 90."),
+      longitude: z
+        .number({ error: "Enter a longitude between -180 and 180, or remove coordinates." })
+        .min(-180, "Longitude must be between -180 and 180.")
+        .max(180, "Longitude must be between -180 and 180."),
+      accuracy: z.number().nonnegative().max(40_100_000).nullable().default(null),
+    })
+    .strict()
+    .nullable()
+    .optional(),
   category: z.enum(categories, { error: "Choose an incident category." }),
   locationId: z.string().min(1, "Choose a campus location."),
   locationNote: z

@@ -47,10 +47,10 @@ before(async () => {
   process.env.DATABASE_URL = process.env.DATABASE_URL_UNPOOLED = url.toString();
   const pushed = spawnSync(
     process.execPath,
-    ["node_modules/prisma/build/index.js", "db", "push", "--skip-generate"],
+    ["node_modules/prisma/build/index.js", "migrate", "deploy"],
     { env: process.env, encoding: "utf8" },
   );
-  assert.equal(pushed.status, 0, "Isolated test database must initialise");
+  assert.equal(pushed.status, 0, `Isolated test database must initialise: ${pushed.stderr.replace(/postgres(?:ql)?:\/\/\S+/g, "[database URL]")}`);
   ({ db } = await import("../src/lib/db"));
   service = await import("../src/lib/reports");
   ({ ApiError } = await import("../src/lib/http/errors"));
@@ -91,6 +91,40 @@ after(async () => {
     if (schema) await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
     await db.$disconnect();
   }
+});
+
+test("coordinates persist, remain private, can be edited and removed, and invalid points are rejected", async () => {
+  const coordinates = { latitude: 7.51825, longitude: 4.52588, accuracy: 18.5 };
+  const created = await service.createReport(student, body({ channel: "SECURITY", confidential: true, coordinates }));
+  assert.deepEqual((await service.getReport(student, created.ref)).coordinates, coordinates);
+  assert.deepEqual((await service.getReport(supervisor, created.ref)).coordinates, coordinates);
+  const restricted = await service.getReport(security, created.ref);
+  assert.equal("coordinates" in restricted, false);
+  assert.equal("location" in restricted, false);
+  await errorCode(service.getReport(other, created.ref), 404);
+  await errorCode(service.getReport(committee, created.ref), 404);
+  const { channel: _channel, occurredAt: _date, ...editable } = body();
+  const manual = { latitude: 7.52, longitude: 4.53, accuracy: null };
+  await service.editReport(student, created.ref, { ...editable, confidential: true, coordinates: manual });
+  assert.deepEqual((await service.getReport(student, created.ref)).coordinates, manual);
+  await service.editReport(student, created.ref, { ...editable, confidential: true });
+  assert.deepEqual((await service.getReport(student, created.ref)).coordinates, manual);
+  await service.editReport(student, created.ref, { ...editable, confidential: true, coordinates: null });
+  assert.equal((await service.getReport(student, created.ref)).coordinates, null);
+  const row = await db.report.findUniqueOrThrow({ where: { id: created.id } });
+  assert.equal(row.latitude, null);
+  assert.equal(row.longitude, null);
+  assert.equal(row.accuracy, null);
+  for (const point of [
+    { latitude: 91, longitude: 4 }, { latitude: 7, longitude: -181 },
+    { latitude: 7 }, { latitude: "7", longitude: 4 },
+    { latitude: 7, longitude: 4, accuracy: -1 }, { latitude: null, longitude: 4 },
+    { latitude: 7, longitude: 4, tracking: true },
+  ]) await assert.rejects(service.createReport(student, body({ coordinates: point })));
+  await assert.rejects(db.report.update({ where: { id: created.id }, data: { latitude: 7, longitude: null } }));
+  await assert.rejects(db.report.update({ where: { id: created.id }, data: { latitude: 91, longitude: 4 } }));
+  await db.statusEvent.deleteMany({ where: { reportId: created.id } });
+  await db.report.delete({ where: { id: created.id } });
 });
 
 test("each channel persists reports, references, and initial timeline; students see only their own", async () => {

@@ -205,7 +205,7 @@ export function AppShell({
                 {staff
                   ? account.role === "COMMITTEE"
                     ? "Committee portal"
-                    : "Security portal"
+                    : account.role === "SUPERVISOR" ? "Supervisor portal" : "Security portal"
                   : "Student portal"}
               </strong>
               <small>

@@ -2,9 +2,9 @@
 
 A Smart Campus Security and Emergency Response System course prototype for Obafemi Awolowo University, Ile-Ife. Students choose the Student Union Security Committee or Official University Security, submit a report, and follow its status. Staff see only their own channel and permitted confidential information.
 
-The controlling requirements are summarised in [codex.md](codex.md). The app uses PostgreSQL (Neon) through Prisma with reviewed migrations in `prisma/migrations/`, plus a fictional demo seed. Strict TypeScript checking and the incident lifecycle integration tests pass. A production build passes in the low-disk mode below. Browser end-to-end checks remain blocked by this session's localhost-listening restriction; the app has not been deployed. See [GATES.md](GATES.md) and [the current verification report](docs/verification-status.md).
+The controlling requirements are summarised in [codex.md](codex.md). The app uses online PostgreSQL (Neon) through Prisma with reviewed migrations in `prisma/migrations/`, plus a fictional demo seed. The latest changes add sourced emergency telephone links, nearby-security guidance, an 8-character password minimum, optional incident coordinates and restricted staff map/analytics views. See [the Chapter Three comparison](docs/student-review.md) and [current acceptance gates](STUDENT_REVIEW_GATES.md) for scope and verification.
 
-For the latest download/test retry and the precise email, database, contact, and hosting requirements, see [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md).
+For current database, contact and feature details, see [the student-review record](docs/student-review.md) and the configuration below. [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) records an earlier SQLite setup.
 
 ## Run locally
 
@@ -68,7 +68,7 @@ src/lib/validation.ts     Shared input schemas
 src/lib/status.ts         Allowed status transitions
 src/lib/http/             Browser requests, backend errors, origin, responses
 src/styles/               Tokens, base, layout, shared components, page styles
-src/config/contacts.ts    Pending/verified contact configuration
+src/config/contacts.ts    Published emergency contacts and source links
 prisma/schema.prisma      PostgreSQL schema
 prisma/migrations/        Reviewed migrations applied with `prisma migrate deploy`
 prisma/seed.ts             Non-destructive fictional demo seed
@@ -107,15 +107,14 @@ npm run build
 
 Integration tests create and drop an isolated temporary schema in the PostgreSQL database named by `TEST_DATABASE_URL`. They test saved reports, unique references under parallel submissions, ownership and channel denials, exact confidential allowlists with positive controls for sensitive data, editing restrictions, status transitions, same-channel assignment, referral, historical-note isolation, terminal states, and urgency ordering. They do not alter the demo database.
 
-For browser checks, initialise the local demo database, install the browser, then run:
+For browser checks, configure the online PostgreSQL connection, install the browser, then run:
 
 ```sh
-npm run db:setup
-npx playwright install chromium
+npx playwright install chromium --only-shell
 npm run test:e2e
 ```
 
-Playwright starts the development server if one is not running. Browser tests submit fictional reports and create a fictional student in the **demo database**, so this suite must never target a real deployment or real incident data. It covers registration, submission to both channels, open-queue polling, handling/referral, student privacy, wrong-account denial, cross-origin mutation rejection, and mobile/desktop overflow checks. Run against a disposable demo database if you want the original fixtures unchanged.
+The browser runner applies migrations and seeds fictional records in a temporary schema, starts its own localhost server connected to that online schema, runs Playwright, and removes the schema. It disables outgoing email and isolates rate counters between browser cases. Checks cover registration, submission, polling, handling/referral, privacy, geolocation and its fallback, maps, all staff dashboards, and mobile/desktop layouts. No public-schema reports are seeded or deleted by this runner.
 
 The offline access check executes the actual access-control and status-table source against explicit policy fixtures, including positive controls for redacted secrets. It does not substitute for database, session, API, or browser integration testing.
 
@@ -149,10 +148,10 @@ Before deploying:
 
 ## Known limitations and deferred work
 
-- **Current browser blocker:** the session cannot listen on `127.0.0.1:3000`, so Playwright cannot start the test web server. Dependencies, the Prisma client, local migration, seed, integration tests, and low-disk production build are now verified. No live browser-flow or deployment result is claimed.
-- Emergency phone numbers are unverified. `VERIFY_BEFORE_DEMO` stays in configuration and is never presented as a phone number. The verified-contact acceptance check remains pending.
+- Current verification is recorded in [STUDENT_REVIEW_GATES.md](STUDENT_REVIEW_GATES.md). Historical gate files describe earlier snapshots.
+- QRS numbers are sourced from OAU Security Unit and 112 from NCC. Sources and check dates are displayed. Live call availability and the Committee's current phone number still need direct stakeholder confirmation.
 - Committee participation, checking frequency, production readiness, and sensitive public-update policy are unconfirmed.
-- Anonymous reporting, evidence uploads, email/SMS/push notifications, patrol-entry UI, rejection-reason enforcement/duplicate linking, maps/GPS, analytics, and university integrations are deferred per the brief.
+- Anonymous reporting, evidence uploads, SMS/push notifications, patrol-entry UI, rejection-reason enforcement/duplicate linking, and university integrations remain deferred. Optional SMTP notifications, GPS/manual coordinates, maps and staff analytics are implemented.
 - Database-backed login, registration, report and API limits are implemented. Hosting needs trusted proxy and edge protection configuration; see [security details](docs/security.md).
 - Student pages refresh on navigation; only the staff queue polls. Confidential reports expose category/urgency/time to channel staff as explicitly required by the brief.
 - Sessions expire after 30 minutes idle or eight hours absolute; operators can revoke sessions or disable accounts using `account:manage`. Email verification, recovery, staff SSO/MFA and an account management UI are not implemented.

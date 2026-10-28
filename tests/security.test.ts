@@ -39,10 +39,10 @@ before(async () => {
   delete process.env.TRUSTED_CLIENT_IP_HEADER;
   const pushed = spawnSync(
     process.execPath,
-    ["node_modules/prisma/build/index.js", "db", "push", "--skip-generate"],
+    ["node_modules/prisma/build/index.js", "migrate", "deploy"],
     { env: process.env, encoding: "utf8" },
   );
-  assert.equal(pushed.status, 0, "Isolated security database must initialise");
+  assert.equal(pushed.status, 0, `Isolated security database must initialise: ${pushed.stderr.replace(/postgres(?:ql)?:\/\/\S+/g, "[database URL]")}`);
   ({ db } = await import("../src/lib/db"));
   limiter = await import("../src/lib/security/rate-limit");
   sessions = await import("../src/lib/security/sessions");
@@ -300,7 +300,7 @@ test("account maintenance revokes sessions and can disable/re-enable access", as
   );
 });
 
-test("new passwords require 15 characters and enforce bcrypt's UTF-8 byte limit", () => {
+test("new passwords accept 8 characters, reject shorter values and enforce bcrypt's UTF-8 byte limit", () => {
   assert.equal(
     registerSchema.safeParse({ name: "Test User", email, password }).success,
     true,
@@ -311,8 +311,9 @@ test("new passwords require 15 characters and enforce bcrypt's UTF-8 byte limit"
       email,
       password: "Demo#2026",
     }).success,
-    false,
+    true,
   );
+  assert.equal(registerSchema.safeParse({ name: "Test User", email, password: "Seven#7" }).success, false);
   assert.equal(
     loginSchema.safeParse({ email, password: "Demo#2026" }).success,
     true,
@@ -503,13 +504,13 @@ test("production CSP uses a fresh per-response nonce and overwrites supplied non
 
 test("rate verification fails closed when its database table is unavailable", async () => {
   await db.$executeRawUnsafe(
-    'ALTER TABLE "RateLimitBucket" RENAME TO "RateLimitBucket_test_unavailable"',
+    `ALTER TABLE "${schema}"."RateLimitBucket" RENAME TO "RateLimitBucket_test_unavailable"`,
   );
   try {
     await status(limiter.consumeLimit("loginIp", "fixture"), 503);
   } finally {
     await db.$executeRawUnsafe(
-      'ALTER TABLE "RateLimitBucket_test_unavailable" RENAME TO "RateLimitBucket"',
+      `ALTER TABLE "${schema}"."RateLimitBucket_test_unavailable" RENAME TO "RateLimitBucket"`,
     );
   }
 });

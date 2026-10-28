@@ -1,3 +1,8 @@
+export type Coordinates = {
+  latitude: number;
+  longitude: number;
+  accuracy: number | null;
+};
 export type TimelineEvent = {
   toStatus: string;
   createdAt: string;
@@ -16,6 +21,7 @@ export type ReportView = {
   description?: string;
   location?: { id: string; name: string; area: string };
   locationNote?: string | null;
+  coordinates?: Coordinates | null;
   occurredAt?: string;
   channel?: string;
   confidential?: boolean;

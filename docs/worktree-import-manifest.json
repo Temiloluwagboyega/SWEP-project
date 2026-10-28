@@ -1,0 +1,42 @@
+{
+  "sourceHead": "206a693a0fe6fcc9a6460b4ee1749baf119b7966",
+  "files": {
+    ".env.example": "cc1fdac1144e4f7dde09c6425228dc211d4967e5aa637eb7f55f715fd6abc96d",
+    ".gitignore": "56cc4171e27f3b2148b0dbc941f914c07db001ba4d4278d219056fb2591d2453",
+    ".vercelignore": "60d58961ddf7474f8c5f4cd4fc78ee3d229d48124476599805101a4582316043",
+    "README.md": "b7c27252dde3154d9848f1d42b85e5a9fc190b88a8096cc28c11b6b6db4da308",
+    "docs/security.md": "63a6a37c792579168b8c5776e6f4c9996d01f6bb1bd445bf7357e5b1a3310f82",
+    "package-lock.json": "cf65203ef9c1d0ae32f271696163dbb24249cbb03fb02519445a7d8d6360a542",
+    "package.json": "4a8b2c646ff744c6e42541ca12512bbbd62a079d9e92f29cc61a550cc3ab08a7",
+    "prisma/migrations/0_init/migration.sql": "c839e2c090a0d6340e3d2cd0bc77393212ff601770f9c984e0b2b2536b5b65a6",
+    "prisma/migrations/1_security_controls/migration.sql": "4a076743ec6a7bf2248b2412b7148fac22ab31d866d9c4733c702d8dfdf62ae9",
+    "prisma/migrations/migration_lock.toml": "99836963713b4f5b269ad49af0ed3d7b0b2e336115c2f92dc9ac683d139d0900",
+    "prisma/schema.prisma": "082e4f74b3664318b5deb9ccabfe56c811f84768cc2b91510e21c083b0d8da43",
+    "scripts/setup-env.cjs": "e814842de3afd6c39a6d661ff7009231bd4ee27181d7bde3da626eb46465b932",
+    "scripts/verify-database.cjs": "082626ce96779bb2a17c69b910e8ab1d1051d0a9a873178c1d8a92372c9740a4",
+    "src/app/api/[...path]/route.ts": "eab9139bd696b6f981149c36649bf6927f438259574a2c60c9f9dd1660886ae6",
+    "src/app/layout.tsx": "26098ccc35bebe7afabf16e2476370a6fdc140f74745cb53594ab09e69281599",
+    "src/components/auth/auth-form.tsx": "d816e7dd3bb0c1dbabf3c48392f682a7dff5173511264c3a130ddd369289ebbc",
+    "src/components/auth/auth-layout.tsx": "8da468e92ec3e16db642f123137207412d757ed9c3f5bcc83c9fd906e46e1617",
+    "src/components/layout/app-shell.tsx": "67cbeeddeb50b7f067adda719720bf870badb60a89b8ce92203bed47b705d463",
+    "src/components/layout/brand.tsx": "648e43cda7bb73c761acd5385d56d8029efd2c03505af6f11f747d69dddf99a1",
+    "src/components/layout/emergency-banner.tsx": "bde1593b17faf003052c5da25467e2ec5f948ed97a42cf809f160a21ea13d7aa",
+    "src/components/layout/site-footer.tsx": "4e865189ad619e43f0478e0e0583fef458a3e71c7a7df06e456802ae265cfbaa",
+    "src/hooks/use-staff-queue.ts": "6d196133af5733e5c9b005a8fd3c0f2cfee1ab9a642633ab29290eecd78c448d",
+    "src/lib/email.ts": "084087308605c9e391f7d71f23cabdaad7fb9016c830d55f0ccb64dd7f6158c4",
+    "src/lib/reports.ts": "f6704282ddfc7bbc4ea9b242da9ac578d72f2039726d6b536896cc2324cb19c7",
+    "src/styles/components.css": "80eae4ea9aca111f2dc2d682fcb4a00a233aaf8ab41b6d29b0ae91cf4d20c7ab",
+    "src/styles/layout.css": "44842275c25f28997c687ed37fb77baa79b04ba857154360d695db7cf3140843",
+    "tests/integration.test.ts": "297383256441700b36480b26fde41a18336ded430dae8525d9b62c43067d0880",
+    "tests/security.test.ts": "5dbcb7d65ebddbe21c3afe7a396f434138bf00b2aeebd1d58f88e8859811933e",
+    "CONTINUATION_GATES.md": "5ed677e42b4cb08973e9232a59470ec3edd349442679506fc8cd48293c6a66a4",
+    "docs/claude-continuation.md": "58c0208b9d64af34f3960522a52eadddffd83011a06abfe7813f073a71587066",
+    "scripts/test-without-email.cjs": "7dcfdaed43cdd345c86646754650efe9c952f88930291d22eaa93bb6d53c7927",
+    "src/config/brand.ts": "adad9b30091437dda190d0ac382d6130175c96f91e1a45027cd50edfac77bd6a",
+    "tests/email.test.ts": "18d0794d62dc96e46f5c8dc452bb1176d252309c7b8e828d9b4fa2e8119577a3"
+  },
+  "deleted": [
+    "prisma/migrations/20261026132333_init/migration.sql",
+    "prisma/migrations/20261027110749_security_controls/migration.sql"
+  ]
+}

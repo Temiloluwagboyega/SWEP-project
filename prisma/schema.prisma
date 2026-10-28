@@ -73,6 +73,9 @@ model Report {
   locationId   String
   location     Location      @relation(fields: [locationId], references: [id])
   locationNote String?
+  latitude     Float?
+  longitude    Float?
+  accuracy     Float?
   occurredAt   DateTime
   channel      Channel
   urgent       Boolean       @default(false)

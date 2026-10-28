@@ -18,8 +18,8 @@ export function SiteFooter() {
         </div>
       </div>
       <p className="shell footer-note">
-        This app is not monitored 24/7. For emergencies, call the QRS directly
-        or visit the Senate Building. Phone numbers are awaiting verification.
+        This app is not monitored 24/7. For emergencies, contact security personnel near you,
+        call QRS directly, or visit the Senate Building. Published telephone numbers and sources are on the contacts page.
       </p>
     </footer>
   );

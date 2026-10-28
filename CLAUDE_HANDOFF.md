@@ -1,13 +1,20 @@
-# Claude continuation
+# Main checkout now contains the reviewed changes
 
-The saved Claude conversation for this project was recovered and read. Active work is on branch `merge-prs` in:
+The complete reviewed source from Claude's `merge-prs` worktree is now in `/Users/wikiwoo/Documents/swep`, on the existing main branch. Both PRs' code (PostgreSQL/SMTP), SafeCampus branding, navigation/error styling and the continued email-security fixes are present here. The import verified 33 source files against its snapshot and applied two reviewed SQLite-migration deletions in favour of the contributor's PostgreSQL history. The original SQLite database file was preserved.
 
-`/private/tmp/claude-501/-Users-wikiwoo-Documents-swep/3ae44046-590c-47ee-8b84-de9a66e9e172/scratchpad/wt`
+Your auth secret and SMTP configuration were retained. The database settings were brought from Claude's local PostgreSQL setup, including its test URL. The previous SQLite URL is retained privately as SQLITE_DATABASE_URL. This is a local development configuration; configure Neon connection URLs separately in your hosting environment before deployment. No private environment file is committed.
 
-That branch contains local merges of PR #1 (SMTP email) and PR #2 (Neon PostgreSQL), plus unfinished SafeCampus branding/navigation work from Claude. Codex continued there, preserving those changes and fixing SMTP error leakage, post-response urgent-alert failure handling, sticky offsets and touch targets. No actual email was sent.
+Missing Nodemailer dependencies were copied from the existing source installation after checking their versions against the imported lockfile. The app no longer depends on the temporary worktree to run.
 
-Validation: TypeScript, production build, access-policy checks and five mocked email tests pass. Five of seven continuation gates are met; database test TCP access and the local browser preview are denied with EPERM, so those two checks remain handoffs. No current PostgreSQL or browser acceptance result is claimed.
+Current checks are recorded in MAIN_IMPORT_GATES.md. Earlier database/browser checks were blocked by EPERM; no successful live database, email delivery or browser verification is claimed for this session. No test email was sent.
 
-The worktree's `docs/claude-continuation.md` and `CONTINUATION_GATES.md` record details. A reviewable patch covering the merged branch and uncommitted changes is saved in `artifacts/claude-continuation.patch`; private environment files and credentials are excluded. The patch has been checked against this checkout without applying it.
+Git metadata writes are denied in this session, so the file import does not create a merge commit or update remote main. Once checks have been reviewed, run from a normal terminal:
 
-The main checkout still has the old source; these changes have not been applied to main or pushed remotely. Git staging/committing is blocked here because `.git/worktrees/wt/index.lock` cannot be created (Operation not permitted). Complete database/browser checks and commit/merge from a normal terminal before publishing. Preserve the worktree until its changes have been integrated or exported safely.
+```sh
+cd /Users/wikiwoo/Documents/swep
+git add -A
+git commit -m "Integrate reviewed PRs and SafeCampus fixes"
+git push origin main
+```
+
+This commits the complete imported snapshot on main. The original merge-prs branch and worktree remain available as backups; no force push is needed. Private `.env`, SQLite files, node_modules and artifacts are ignored. Main's older Git history changes only when the commit succeeds.

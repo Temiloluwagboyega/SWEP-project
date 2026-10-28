@@ -80,6 +80,9 @@ export function serializeReport(
       area: report.location.area,
     },
     locationNote: report.locationNote,
+    coordinates: report.latitude !== null && report.longitude !== null
+      ? { latitude: report.latitude, longitude: report.longitude, accuracy: report.accuracy }
+      : null,
     occurredAt: report.occurredAt.toISOString(),
     channel: report.channel,
     confidential: report.confidential,

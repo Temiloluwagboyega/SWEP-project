@@ -21,6 +21,14 @@ import {
 import { transitions } from "./status";
 import { categories, statuses } from "./constants";
 import { sendReportReceived, sendStatusUpdate, sendUrgentAlert } from "./email";
+import type { Coordinates } from "../types/app";
+function coordinatesData(coordinates: Coordinates | null) {
+  return {
+    latitude: coordinates?.latitude ?? null,
+    longitude: coordinates?.longitude ?? null,
+    accuracy: coordinates?.accuracy ?? null,
+  };
+}
 const include = {
   location: true,
   reporter: { select: { id: true, name: true, email: true } },
@@ -104,7 +112,7 @@ export async function getReport(user: SessionUser, key: string) {
 }
 export async function createReport(user: SessionUser, input: unknown) {
   if (user.role !== "STUDENT") denied();
-  const data = reportSchema.parse(input);
+  const { coordinates, ...data } = reportSchema.parse(input);
   await consumeLimit("report", user.id);
   const report = await db.$transaction(async (tx) => {
     await locationExists(tx, data.locationId);
@@ -113,6 +121,7 @@ export async function createReport(user: SessionUser, input: unknown) {
     const report = await tx.report.create({
       data: {
         ...data,
+        ...(coordinates ? coordinatesData(coordinates) : {}),
         occurredAt: new Date(data.occurredAt),
         ref,
         reporterId: user.id,
@@ -141,7 +150,7 @@ export async function editReport(
   key: string,
   input: unknown,
 ) {
-  const data = editSchema.parse(input);
+  const { coordinates, ...data } = editSchema.parse(input);
   return db.$transaction(async (tx) => {
     const report = await find(tx, user, key);
     if (user.role !== "STUDENT" || report.reporterId !== user.id) denied();
@@ -151,7 +160,10 @@ export async function editReport(
         "This report has been reviewed or assigned and can no longer be edited.",
       );
     await locationExists(tx, data.locationId);
-    await lockedUpdate(tx, report, data);
+    await lockedUpdate(tx, report, {
+      ...data,
+      ...(coordinates !== undefined ? coordinatesData(coordinates) : {}),
+    });
     await tx.statusEvent.create({
       data: {
         reportId: report.id,

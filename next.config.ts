@@ -16,7 +16,7 @@ const config: NextConfig = {
           { key: "Referrer-Policy", value: "no-referrer" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), payment=()",
+            value: "camera=(), microphone=(), geolocation=(self), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "off" },
           ...(process.env.AUTH_URL?.startsWith("https://")

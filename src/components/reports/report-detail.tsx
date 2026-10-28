@@ -16,6 +16,8 @@ import {
 } from "@/lib/constants";
 import { StatusBadge, ConfidentialBadge } from "@/components/ui/badge";
 import type { ReportView } from "@/types/app";
+import { emergencyGuidance } from "@/config/contacts";
+import { IncidentMap } from "./incident-map";
 export function ReportDetail({
   report,
   staff = false,
@@ -128,6 +130,10 @@ export function ReportDetail({
                       <dd>{dateLabel(report.createdAt)}</dd>
                     </div>
                   </dl>
+                  {report.coordinates && <section className="description-block" aria-label="Attached incident coordinates">
+                    <h3>Attached incident coordinates</h3>
+                    <IncidentMap coordinates={report.coordinates} />
+                  </section>}
                   <div className="description-block">
                     <h3>What happened</h3>
                     <p>{report.description}</p>
@@ -218,8 +224,7 @@ export function ReportDetail({
               <hr />
               <h4>Need urgent help?</h4>
               <p>
-                Go directly to the QRS, Senate Building. Don’t wait for an
-                online update.
+                {emergencyGuidance} Don’t wait for an online update.
               </p>
               <Link className="text-link" href="/contacts">
                 Emergency contacts →

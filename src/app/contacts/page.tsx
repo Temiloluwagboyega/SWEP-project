@@ -1,5 +1,5 @@
 import { MapPin, Phone, ArrowUpRight, Info, ShieldCheck } from "lucide-react";
-import { contacts } from "@/config/contacts";
+import { contacts, emergencyGuidance } from "@/config/contacts";
 import { PageHeading } from "@/components/ui/page-heading";
 export default function Contacts() {
   return (
@@ -7,14 +7,14 @@ export default function Contacts() {
       <PageHeading
         eyebrow="Help & contacts"
         title="Emergency contacts"
-        description="Reach the people who support campus safety. For immediate danger, go directly to the QRS."
+        description="Reach campus security, nearby security personnel, or emergency services directly."
       />
       <div className="notice notice-urgent">
         <Info aria-hidden="true" size={20} />
         <div>
           <strong>This app is not monitored 24/7.</strong>
           <p>
-            For emergencies, call the QRS directly or visit the Senate Building.
+            {emergencyGuidance}{" "}
             Submitting a report does not guarantee an immediate response.
           </p>
         </div>
@@ -31,15 +31,20 @@ export default function Contacts() {
               {contact.location}
             </p>
             <p>{contact.description}</p>
-            {contact.verified && contact.phone !== "VERIFY_BEFORE_DEMO" ? (
-              <a
-                className="button button-primary"
-                href={`tel:${contact.phone}`}
-              >
-                <Phone aria-hidden="true" size={16} />
-                Call {contact.phone}
-                <ArrowUpRight aria-hidden="true" size={16} />
-              </a>
+            {contact.phone ? (
+              <div className="form-stack">
+                {[contact.phone, ...(contact.otherPhones ?? [])].map((phone, index) => (
+                  <a key={phone} className={`button button-${index ? "outline" : "primary"}`} href={`tel:${phone}`}>
+                    <Phone aria-hidden="true" size={16} />
+                    Call {phone}
+                    <ArrowUpRight aria-hidden="true" size={16} />
+                  </a>
+                ))}
+                {contact.source && <p className="field-help">
+                  <a className="text-link" href={contact.source.url} target="_blank" rel="noreferrer">{contact.source.title}</a>
+                  <br />Source checked {contact.source.checkedOn}. Published numbers; call availability has not been tested.
+                </p>}
+              </div>
             ) : (
               <div className="unverified-note">
                 <Info aria-hidden="true" size={15} />

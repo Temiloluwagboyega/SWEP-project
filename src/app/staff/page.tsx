@@ -11,8 +11,8 @@ export default async function Staff() {
     <div className="shell page-content">
       <PageHeading
         eyebrow={`${channel} responder portal`}
-        title="Report queue"
-        description="Review, assign, and follow up on reports in your receiving channel."
+        title={user.role === "SUPERVISOR" ? "Supervisor dashboard" : `${channel} dashboard`}
+        description="Review and assign reports, explore location patterns, and follow up in your receiving channel."
         action={
           <div className="portal-label">
             <span className="green-dot" />
