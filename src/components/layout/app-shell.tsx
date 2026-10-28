@@ -188,6 +188,13 @@ export function AppShell({
       ];
   return (
     <div className="shell portal-shell">
+      {menu.open && (
+        <div
+          className="portal-backdrop"
+          aria-hidden="true"
+          onClick={() => menu.setOpen(false)}
+        />
+      )}
       <aside className="portal-sidebar" data-open={menu.open || undefined}>
         <div className="portal-bar">
           <Brand inverse />
@@ -199,21 +206,21 @@ export function AppShell({
         </div>
         <div className="portal-panel" id="portal-panel">
           <div className="portal-identity">
-            <ShieldCheck aria-hidden="true" size={23} />
-            <div>
-              <strong>
+            <div className="portal-identity-badge">
+              <span className="portal-status-dot" aria-hidden="true" />
+              <span>
                 {staff
                   ? account.role === "COMMITTEE"
-                    ? "Committee portal"
-                    : "Security portal"
-                  : "Student portal"}
-              </strong>
-              <small>
-                {staff
-                  ? "Manage your channel’s reports"
-                  : "Report and follow up"}
-              </small>
+                    ? "Committee Portal"
+                    : "Security Portal"
+                  : "Student Portal"}
+              </span>
             </div>
+            <p className="portal-identity-subtitle">
+              {staff
+                ? "Incident triage & response"
+                : "Incident reporting & follow-up"}
+            </p>
           </div>
           <nav aria-label="Portal navigation">
             {links.map((item) => (
@@ -223,22 +230,24 @@ export function AppShell({
                 onClick={() => menu.setOpen(false)}
                 aria-current={selected(path, item.href) ? "page" : undefined}
               >
-                <item.icon aria-hidden="true" size={19} />
-                {item.label}
+                <item.icon aria-hidden="true" size={18} />
+                <span>{item.label}</span>
               </Link>
             ))}
-            <Link href="/">
-              <Home aria-hidden="true" size={19} />
-              Back to overview
+            <Link href="/" onClick={() => menu.setOpen(false)}>
+              <Home aria-hidden="true" size={18} />
+              <span>Back to overview</span>
             </Link>
           </nav>
           <div className="sidebar-note">
-            <LockKeyhole aria-hidden="true" size={19} />
-            <strong>Private by default</strong>
+            <div className="sidebar-note-header">
+              <LockKeyhole aria-hidden="true" size={15} />
+              <strong>Private & secure</strong>
+            </div>
             <p>
               {staff
-                ? "Access is limited to your channel and permitted case details."
-                : "Other students cannot see your reports."}
+                ? "Access is strictly limited to your channel."
+                : "Your reports are private and visible only to authorized responders."}
             </p>
           </div>
           <div className="portal-account">
@@ -246,8 +255,8 @@ export function AppShell({
               {account.name?.slice(0, 1) ?? "U"}
             </span>
             <span className="account-name">
-              {account.name}
-              <small>{staff ? "Responder" : "Student"}</small>
+              <span className="account-display-name">{account.name}</span>
+              <small>{staff ? (account.role === "SUPERVISOR" ? "Supervisor" : "Responder") : "Student"}</small>
             </span>
             <SignOutButton />
           </div>
