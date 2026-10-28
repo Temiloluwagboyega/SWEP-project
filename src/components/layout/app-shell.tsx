@@ -158,6 +158,89 @@ export function SiteHeader({ account }: { account: Account }) {
     </header>
   );
 }
+
+function getPortalBreadcrumb(path: string, staff: boolean, role?: string) {
+  const portalName = staff
+    ? role === "COMMITTEE"
+      ? "Committee Portal"
+      : "Security Portal"
+    : "Student Portal";
+  const portalRoot = staff ? "/staff" : "/reports";
+
+  let pageLabel = "Dashboard";
+  if (path === "/reports") pageLabel = "My reports";
+  else if (path === "/contacts" || path.startsWith("/contacts/"))
+    pageLabel = "Emergency contacts";
+  else if (path === "/report/new") pageLabel = "New report";
+  else if (path === "/profile") pageLabel = "My profile";
+  else if (path.includes("/edit")) pageLabel = "Edit report";
+  else if (path.startsWith("/reports/")) pageLabel = "Report details";
+  else if (path === "/staff") pageLabel = "Report queue";
+  else if (path.startsWith("/staff/reports/")) pageLabel = "Report review";
+
+  return { portalName, portalRoot, pageLabel };
+}
+
+function PortalHeader({
+  path,
+  account,
+}: {
+  path: string;
+  account: NonNullable<Account>;
+}) {
+  const staff = account.role !== "STUDENT";
+  const { portalName, portalRoot, pageLabel } = getPortalBreadcrumb(
+    path,
+    staff,
+    account.role,
+  );
+  const displayName = account.name || (staff ? "Responder" : "Student");
+
+  return (
+    <header className="portal-header" aria-label="Portal top bar">
+      <nav className="portal-breadcrumb" aria-label="Breadcrumb">
+        <Link href={portalRoot} className="portal-crumb-root">
+          <ShieldCheck aria-hidden="true" size={16} />
+          <span>{portalName}</span>
+        </Link>
+        <span className="portal-crumb-separator" aria-hidden="true">
+          /
+        </span>
+        <span className="portal-crumb-current" aria-current="page">
+          {pageLabel}
+        </span>
+      </nav>
+      <div className="portal-header-actions">
+        <Link
+          href={staff ? "/staff" : "/profile"}
+          className="portal-header-profile"
+          title={
+            staff
+              ? `Signed in as ${displayName}`
+              : `Signed in as ${displayName} · View profile`
+          }
+        >
+          <span className="avatar portal-header-avatar" aria-hidden="true">
+            {displayName.slice(0, 1).toUpperCase()}
+          </span>
+          <span className="portal-header-text">
+            <span className="portal-header-name">{displayName}</span>
+            <span className="portal-header-badge">
+              {staff
+                ? account.role === "SUPERVISOR"
+                  ? "Supervisor"
+                  : account.role === "COMMITTEE"
+                    ? "Committee"
+                    : "Responder"
+                : "Student"}
+            </span>
+          </span>
+        </Link>
+      </div>
+    </header>
+  );
+}
+
 export function AppShell({
   account,
   children,
@@ -286,7 +369,10 @@ export function AppShell({
           <span className="prototype-label">OAU course project</span>
         </div>
       </aside>
-      <div className="portal-content">{children}</div>
+      <div className="portal-content">
+        <PortalHeader path={path} account={account} />
+        {children}
+      </div>
     </div>
   );
 }
