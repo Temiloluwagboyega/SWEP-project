@@ -119,9 +119,10 @@ export function ProfileMenu({
               role="menuitem"
               className="portal-dropdown-item"
               onClick={() => setOpen(false)}
+              title="View your profile"
             >
               <User aria-hidden="true" size={15} />
-              <span>My profile</span>
+              <span>View your profile</span>
             </Link>
 
             <Link
