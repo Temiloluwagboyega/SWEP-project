@@ -21,7 +21,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getSessionUser();
-  const account = user ? { name: user.name, role: user.role } : null;
+  const account = user
+    ? { name: user.name, role: user.role, email: user.email }
+    : null;
   return (
     <html lang="en">
       <body>
