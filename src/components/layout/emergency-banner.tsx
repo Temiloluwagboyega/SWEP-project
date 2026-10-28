@@ -1,7 +1,21 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ArrowUpRight, Siren, MapPin } from "lucide-react";
 import { contacts } from "@/config/contacts";
+
 export function EmergencyBanner() {
+  const pathname = usePathname();
+  // Do not display the full-width alert banner in the authenticated student or staff portal
+  if (
+    pathname &&
+    (pathname.startsWith("/reports") ||
+      pathname.startsWith("/report/") ||
+      pathname.startsWith("/staff") ||
+      pathname.startsWith("/profile"))
+  ) {
+    return null;
+  }
   const qrs = contacts[0];
   return (
     <div className="emergency-strip" role="region" aria-label="Emergency help">
