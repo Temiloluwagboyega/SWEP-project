@@ -15,14 +15,15 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
-type Account = { name?: string | null; role: string } | null;
+type Account = { name?: string | null; role: string; email?: string | null } | null;
 // Signed-in portal pages use the sidebar for navigation instead of the public header.
 function inPortal(path: string, account: Account) {
   return (
     !!account &&
     (path.startsWith("/reports") ||
       path.startsWith("/report/") ||
-      path.startsWith("/staff"))
+      path.startsWith("/staff") ||
+      path.startsWith("/profile"))
   );
 }
 function useMenu() {
@@ -39,7 +40,13 @@ function useMenu() {
       }
     };
     document.addEventListener("keydown", escape);
-    return () => document.removeEventListener("keydown", escape);
+    // Prevent background scrolling while the mobile drawer is open
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", escape);
+      document.body.style.overflow = originalOverflow;
+    };
   }, [open]);
   return { path, open, setOpen, toggle };
 }
@@ -251,13 +258,27 @@ export function AppShell({
             </p>
           </div>
           <div className="portal-account">
-            <span className="avatar" aria-hidden="true">
-              {account.name?.slice(0, 1) ?? "U"}
-            </span>
-            <span className="account-name">
-              <span className="account-display-name">{account.name}</span>
-              <small>{staff ? (account.role === "SUPERVISOR" ? "Supervisor" : "Responder") : "Student"}</small>
-            </span>
+            <Link
+              href={staff ? "#" : "/profile"}
+              className="portal-account-link"
+              onClick={() => menu.setOpen(false)}
+              aria-current={selected(path, "/profile") ? "page" : undefined}
+              title={staff ? account.name ?? "Account" : "View your student profile"}
+            >
+              <span className="avatar" aria-hidden="true">
+                {account.name?.slice(0, 1) ?? "U"}
+              </span>
+              <span className="account-name">
+                <span className="account-display-name">{account.name}</span>
+                <small className="account-role-label">
+                  {staff
+                    ? account.role === "SUPERVISOR"
+                      ? "Supervisor"
+                      : "Responder"
+                    : "Student · My profile"}
+                </small>
+              </span>
+            </Link>
             <SignOutButton />
           </div>
           <span className="prototype-label">OAU course project</span>
