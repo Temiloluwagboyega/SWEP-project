@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   ClipboardList,
   FilePlus2,
-  Home,
   LifeBuoy,
   LockKeyhole,
   Menu,
@@ -268,7 +267,7 @@ export function AppShell({
         { href: "/contacts", label: "Emergency contacts", icon: LifeBuoy },
       ];
   return (
-    <div className="shell portal-shell">
+    <div className="portal-shell">
       {menu.open && (
         <div
           className="portal-backdrop"
@@ -316,10 +315,6 @@ export function AppShell({
                 <span>{item.label}</span>
               </Link>
             ))}
-            <Link href="/" onClick={() => menu.setOpen(false)}>
-              <Home aria-hidden="true" size={18} />
-              <span>Back to overview</span>
-            </Link>
           </nav>
           <div className="sidebar-note">
             <div className="sidebar-note-header">
