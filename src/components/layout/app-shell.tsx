@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   LockKeyhole,
   Menu,
+  Plus,
   ShieldCheck,
   X,
 } from "lucide-react";
@@ -195,6 +196,8 @@ function PortalHeader({
     account.role,
   );
   const displayName = account.name || (staff ? "Responder" : "Student");
+  const isStudent = account.role === "STUDENT";
+  const showNewReport = isStudent && path !== "/report/new";
 
   return (
     <header className="portal-header" aria-label="Portal top bar">
@@ -211,6 +214,15 @@ function PortalHeader({
         </span>
       </nav>
       <div className="portal-header-actions">
+        {showNewReport && (
+          <Link
+            className="button button-primary button-header-new"
+            href="/report/new"
+          >
+            <Plus aria-hidden="true" size={16} strokeWidth={2.4} />
+            <span>New report</span>
+          </Link>
+        )}
         <Link
           href={staff ? "/staff" : "/profile"}
           className="portal-header-profile"
@@ -314,6 +326,7 @@ export function AppShell({
                 : "Incident reporting & follow-up"}
             </p>
           </div>
+          <div className="sidebar-section-label">Navigation</div>
           <nav aria-label="Portal navigation">
             {links.map((item) => (
               <Link
