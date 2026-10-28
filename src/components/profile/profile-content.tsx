@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef, useEffect, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertCircle,
@@ -40,6 +40,21 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentImage(user.image ?? null);
+  }, [user.image]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ image: string | null }>;
+      setCurrentImage(customEvent.detail?.image ?? null);
+    };
+    window.addEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    };
+  }, []);
 
   const displayName = user.name?.trim() || "User Account";
   const displayEmail = user.email?.trim() || "No email on record";
@@ -124,6 +139,13 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
       setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setSuccess("Profile picture updated and saved successfully.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("campusguard:avatar-updated", {
+            detail: { image: preview },
+          }),
+        );
+      }
       router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to save picture.";
@@ -151,6 +173,13 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
       setPreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
       setSuccess("Profile picture removed. Reverted to default avatar.");
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(
+          new CustomEvent("campusguard:avatar-updated", {
+            detail: { image: null },
+          }),
+        );
+      }
       router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Failed to remove picture.";

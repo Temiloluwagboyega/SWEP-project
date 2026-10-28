@@ -4,9 +4,10 @@ declare module "next-auth" {
   interface User {
     role: Role;
     sessionVersion: number;
+    image?: string | null;
   }
   interface Session {
-    user: { id: string; role: Role } & DefaultSession["user"];
+    user: { id: string; role: Role; image?: string | null } & DefaultSession["user"];
   }
 }
 declare module "next-auth/jwt" {

@@ -85,10 +85,28 @@ function selected(path: string, href: string) {
     ? path === "/"
     : path === href || path.startsWith(`${href}/`);
 }
-export function SiteHeader({ account }: { account: Account }) {
+export function SiteHeader({ account: initialAccount }: { account: Account }) {
+  const [account, setAccount] = useState<Account>(initialAccount);
   const menu = useMenu();
   const { path, open, setOpen } = menu;
   const staff = !!account && account.role !== "STUDENT";
+
+  useEffect(() => {
+    setAccount(initialAccount);
+  }, [initialAccount]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ image: string | null }>;
+      const newImage = customEvent.detail?.image ?? null;
+      setAccount((prev) => (prev ? { ...prev, image: newImage } : prev));
+    };
+    window.addEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    };
+  }, []);
+
   const items = [
     { href: "/", label: "Overview" },
     {
@@ -238,14 +256,32 @@ function PortalHeader({
 }
 
 export function AppShell({
-  account,
+  account: initialAccount,
   children,
 }: {
   account: Account;
   children: ReactNode;
 }) {
+  const [account, setAccount] = useState<Account>(initialAccount);
   const menu = useMenu();
   const { path } = menu;
+
+  useEffect(() => {
+    setAccount(initialAccount);
+  }, [initialAccount]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ image: string | null }>;
+      const newImage = customEvent.detail?.image ?? null;
+      setAccount((prev) => (prev ? { ...prev, image: newImage } : prev));
+    };
+    window.addEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    };
+  }, []);
+
   useEffect(() => {
     const top = document.querySelector(".top-bar");
     if (!top) return;
