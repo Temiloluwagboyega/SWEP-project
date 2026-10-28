@@ -81,6 +81,8 @@ The API is routed by `src/app/api/[...path]/route.ts`; Auth.js has its own more-
 
 ## Environment
 
+For the logged Vercel `AUTH_URL` build failure and Production/Preview URL setup, see [Vercel deployment configuration](docs/vercel-deployment.md).
+
 | Variable          | Purpose                                                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `DATABASE_URL`    | Pooled PostgreSQL connection (set automatically by the Neon integration on Vercel).                                    |

@@ -4,6 +4,7 @@ import type { Channel, Status } from "@prisma/client";
 import { db } from "./db";
 import { statusLabels } from "./constants";
 import { brand } from "../config/brand";
+import { readAppOrigin } from "./security/config";
 
 // Any SMTP server works; defaults suit Gmail with an app password.
 const user = process.env.SMTP_USER;
@@ -26,10 +27,7 @@ const transport =
       })
     : null;
 const from = process.env.EMAIL_FROM ?? `${brand.name} <${user}>`;
-const appUrl = (process.env.AUTH_URL ?? "http://localhost:3000").replace(
-  /\/$/,
-  "",
-);
+const appUrl = readAppOrigin();
 
 // Emails only carry the reference, status and a link: reports can be sensitive,
 // so details stay behind sign-in.

@@ -4,6 +4,39 @@ export type SecurityConfig = {
   production: boolean;
   trustedIpHeader?: string;
 };
+export function readAppOrigin(
+  env: Record<string, string | undefined> = process.env,
+): string {
+  const production =
+    env.APP_ENV === "production" ||
+    (env.NODE_ENV === "production" && env.APP_ENV !== "local");
+  const explicit = env.AUTH_URL?.trim() || env.NEXTAUTH_URL?.trim();
+  const vercelHost = env.VERCEL === "1"
+    ? env.VERCEL_ENV === "production"
+      ? env.VERCEL_PROJECT_PRODUCTION_URL || env.VERCEL_URL
+      : env.VERCEL_URL
+    : undefined;
+  let url: URL;
+  try {
+    url = new URL(explicit || (vercelHost ? `https://${vercelHost}` : production ? "" : "http://localhost:3000"));
+  } catch {
+    throw new Error(
+      "Configure AUTH_URL as the canonical application origin, or enable Vercel system environment variables.",
+    );
+  }
+  if (
+    !["http:", "https:"].includes(url.protocol) ||
+    url.username || url.password || url.search || url.hash || url.pathname !== "/"
+  ) throw new Error(
+    "AUTH_URL must be an HTTP(S) origin without credentials, paths or query parameters.",
+  );
+  const local = ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+  if (env.APP_ENV === "local" && !local)
+    throw new Error("Local mode requires a localhost AUTH_URL. Use production mode for hosting.");
+  if ((production || env.VERCEL === "1") && (url.protocol !== "https:" || local))
+    throw new Error("Production requires a public HTTPS AUTH_URL.");
+  return url.origin;
+}
 export function readSecurityConfig(
   env: Record<string, string | undefined> = process.env,
 ): SecurityConfig {
@@ -21,36 +54,7 @@ export function readSecurityConfig(
   const production =
     env.APP_ENV === "production" ||
     (env.NODE_ENV === "production" && env.APP_ENV !== "local");
-  let url: URL;
-  try {
-    url = new URL(env.AUTH_URL ?? (production ? "" : "http://localhost:3000"));
-  } catch {
-    throw new Error("Configure AUTH_URL as the canonical application origin.");
-  }
-  if (
-    !["http:", "https:"].includes(url.protocol) ||
-    url.username ||
-    url.password ||
-    url.search ||
-    url.hash ||
-    url.pathname !== "/"
-  )
-    throw new Error(
-      "AUTH_URL must be an HTTP(S) origin without credentials, paths or query parameters.",
-    );
-  if (
-    env.APP_ENV === "local" &&
-    !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
-  )
-    throw new Error(
-      "Local mode requires a localhost AUTH_URL. Use production mode for hosting.",
-    );
-  if (
-    production &&
-    (url.protocol !== "https:" ||
-      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname))
-  )
-    throw new Error("Production requires a public HTTPS AUTH_URL.");
+  const origin = readAppOrigin(env);
   if (
     production &&
     !env.DATABASE_URL?.startsWith("postgresql:") &&
@@ -63,5 +67,5 @@ export function readSecurityConfig(
     throw new Error(
       "TRUSTED_CLIENT_IP_HEADER must name one trusted proxy header.",
     );
-  return { secret, origin: url.origin, production, trustedIpHeader };
+  return { secret, origin, production, trustedIpHeader };
 }

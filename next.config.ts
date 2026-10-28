@@ -19,7 +19,7 @@ const config: NextConfig = {
             value: "camera=(), microphone=(), geolocation=(self), payment=()",
           },
           { key: "X-DNS-Prefetch-Control", value: "off" },
-          ...(process.env.AUTH_URL?.startsWith("https://")
+          ...(process.env.VERCEL === "1" || process.env.AUTH_URL?.startsWith("https://") || process.env.NEXTAUTH_URL?.startsWith("https://")
             ? [{ key: "Strict-Transport-Security", value: "max-age=31536000" }]
             : []),
           { key: "X-Frame-Options", value: "DENY" },

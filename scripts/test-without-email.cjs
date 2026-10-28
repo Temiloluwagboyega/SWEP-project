@@ -22,6 +22,7 @@ const result = spawnSync(
     "tests/security.test.ts",
     "tests/email.test.ts",
     "tests/insights.test.ts",
+    "tests/deployment-config.test.ts",
   ],
   {
     env: {
