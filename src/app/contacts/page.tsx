@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { MapPin, Phone, ArrowUpRight, Info, ShieldCheck } from "lucide-react";
 import { contacts } from "@/config/contacts";
 import { PageHeading } from "@/components/ui/page-heading";
@@ -57,9 +58,9 @@ export default function Contacts() {
           Phone and in-person reporting remain available through the existing
           campus security structure.
         </p>
-        <a href="/report/new" className="text-link">
+        <Link href="/report/new" className="text-link">
           Report an incident <ArrowUpRight aria-hidden="true" size={16} />
-        </a>
+        </Link>
       </div>
     </div>
   );

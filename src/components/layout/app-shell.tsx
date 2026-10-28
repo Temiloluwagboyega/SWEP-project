@@ -15,15 +15,17 @@ import {
 } from "lucide-react";
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
-type Account = { name?: string | null; role: string; email?: string | null } | null;
+export type Account = { name?: string | null; role: string; email?: string | null } | null;
 // Signed-in portal pages use the sidebar for navigation instead of the public header.
-function inPortal(path: string, account: Account) {
+export function inPortal(path: string, account: Account): boolean {
   return (
     !!account &&
     (path.startsWith("/reports") ||
       path.startsWith("/report/") ||
       path.startsWith("/staff") ||
-      path.startsWith("/profile"))
+      path.startsWith("/profile") ||
+      path === "/contacts" ||
+      path.startsWith("/contacts/"))
   );
 }
 function useMenu() {

@@ -31,13 +31,13 @@ export default async function RootLayout({
           Skip to content
         </a>
         <div className="top-bar">
-          <EmergencyBanner />
+          <EmergencyBanner account={account} />
           <SiteHeader account={account} />
         </div>
         <main id="main">
           <AppShell account={account}>{children}</AppShell>
         </main>
-        <SiteFooter />
+        <SiteFooter account={account} />
       </body>
     </html>
   );

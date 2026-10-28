@@ -1,7 +1,16 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
 import { brand } from "@/config/brand";
-export function SiteFooter() {
+import { inPortal, type Account } from "./app-shell";
+
+export function SiteFooter({ account = null }: { account?: Account }) {
+  const pathname = usePathname();
+  // Do not display the large public footer in the authenticated portal
+  if (inPortal(pathname, account)) {
+    return null;
+  }
   return (
     <footer className="site-footer">
       <div className="shell footer-inner">

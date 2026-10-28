@@ -3,16 +3,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, Siren, MapPin } from "lucide-react";
 import { contacts } from "@/config/contacts";
+import { inPortal, type Account } from "./app-shell";
 
-export function EmergencyBanner() {
+export function EmergencyBanner({ account = null }: { account?: Account }) {
   const pathname = usePathname();
   // Do not display the full-width alert banner in the authenticated student or staff portal
   if (
-    pathname &&
-    (pathname.startsWith("/reports") ||
-      pathname.startsWith("/report/") ||
-      pathname.startsWith("/staff") ||
-      pathname.startsWith("/profile"))
+    inPortal(pathname, account) ||
+    (pathname &&
+      (pathname.startsWith("/reports") ||
+        pathname.startsWith("/report/") ||
+        pathname.startsWith("/staff") ||
+        pathname.startsWith("/profile")))
   ) {
     return null;
   }

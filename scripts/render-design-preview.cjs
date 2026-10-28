@@ -38,7 +38,8 @@ import {locations,reports,redacted,staffReports} from '${path.join(root, "tests/
 export function Preview({screen='/'}){
   const p=screen.split('?')[0];
   const staff=p.startsWith('/staff');
-  const publicScreen=['/','/login','/register','/contacts'].includes(p);
+  const isPublicMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'public';
+  const publicScreen = isPublicMode || ['/','/login','/register'].includes(p);
   const account=publicScreen?null:{name:staff?'Demo Security One':'Demo Student One',role:staff?'SECURITY':'STUDENT',email:staff?'security1@demo.test':'student1@demo.test'};
   let content;
   if(p==='/')content=<HomeContent/>;
@@ -50,7 +51,7 @@ export function Preview({screen='/'}){
   else if(p==='/staff')content=<div className="shell page-content"><PageHeading eyebrow="Security responder portal" title="Report queue" description="Review, assign, and follow up on reports in your receiving channel."/><StaffQueue initialReports={staffReports} channel="Security"/></div>;
   else if(staff){const report=p.endsWith('000022')?redacted:{...(staffReports.find(r=>p.endsWith(r.id||r.ref))||reports[0]),reporter:{id:'demo-reporter',name:'Demo Student One',email:'student1@demo.test'}};content=<ReportDetail report={report} staff actions={<StaffActions report={report} users={[{id:'demo-security',name:'Demo Security One'}]} userId="demo-security" committee={false}/>}/>;}
   else content=<ReportDetail report={reports.find(r=>p.endsWith(r.ref))||reports[0]}/>;
-  return <><div className="preview-notice">Design preview · fictional data · reports are not saved</div><a className="skip-link" href="#main">Skip to content</a><EmergencyBanner/><SiteHeader account={account}/><main id="main"><AppShell account={account}>{content}</AppShell></main><SiteFooter/></>;
+  return <><div className="preview-notice">Design preview · fictional data · reports are not saved</div><a className="skip-link" href="#main">Skip to content</a><EmergencyBanner account={account}/><SiteHeader account={account}/><main id="main"><AppShell account={account}>{content}</AppShell></main><SiteFooter account={account}/></>;
 }
 export {staffReports};
 `;
