@@ -1,7 +1,15 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, FileText, Search, MapPin } from "lucide-react";
+import {
+  ArrowUpRight,
+  CheckCircle2,
+  ClipboardList,
+  Clock,
+  FileText,
+  Search,
+  MapPin,
+} from "lucide-react";
 import {
   categories,
   categoryLabels,
@@ -17,6 +25,9 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
   const active = reports.filter(
     (r) => !["RESOLVED", "CLOSED", "REJECTED"].includes(r.status),
   );
+  const resolved = reports.filter((r) =>
+    ["RESOLVED", "CLOSED"].includes(r.status),
+  );
   const filtered = reports.filter(
     (r) =>
       (tab === "all" ||
@@ -30,29 +41,39 @@ export function ReportsList({ reports }: { reports: ReportView[] }) {
   );
   return (
     <>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <span>Total reports</span>
-          <strong>{reports.length}</strong>
-          <small>All your submitted concerns</small>
+      <div className="stats-grid" role="region" aria-label="Incident summary statistics">
+        <div className="stat-card stat-card-total">
+          <div className="stat-card-header">
+            <span className="stat-card-label">Total reports</span>
+            <span className="stat-card-icon" aria-hidden="true">
+              <ClipboardList size={18} strokeWidth={2} />
+            </span>
+          </div>
+          <strong className="stat-card-value">{reports.length}</strong>
+          <span className="stat-card-description">All your submitted concerns</span>
         </div>
-        <div className="stat-card">
-          <span>Being handled</span>
-          <strong>
+        <div className="stat-card stat-card-active">
+          <div className="stat-card-header">
+            <span className="stat-card-label">Being handled</span>
+            <span className="stat-card-icon stat-icon-active" aria-hidden="true">
+              <Clock size={18} strokeWidth={2} />
+            </span>
+          </div>
+          <strong className="stat-card-value">
             {active.length}
-            <i className="stat-dot" />
+            {active.length > 0 && <span className="stat-pulse-dot" aria-hidden="true" />}
           </strong>
-          <small>Awaiting review or in progress</small>
+          <span className="stat-card-description">Awaiting review or in progress</span>
         </div>
-        <div className="stat-card">
-          <span>Resolved & closed</span>
-          <strong>
-            {
-              reports.filter((r) => ["RESOLVED", "CLOSED"].includes(r.status))
-                .length
-            }
-          </strong>
-          <small>With a recorded outcome</small>
+        <div className="stat-card stat-card-resolved">
+          <div className="stat-card-header">
+            <span className="stat-card-label">Resolved & closed</span>
+            <span className="stat-card-icon stat-icon-resolved" aria-hidden="true">
+              <CheckCircle2 size={18} strokeWidth={2} />
+            </span>
+          </div>
+          <strong className="stat-card-value">{resolved.length}</strong>
+          <span className="stat-card-description">With a recorded outcome</span>
         </div>
       </div>
       <section className="panel reports-panel">

@@ -12,10 +12,10 @@ export default async function Reports() {
       <PageHeading
         eyebrow="Student portal"
         title="My reports"
-        description="Keep track of what you’ve reported and see what happens next."
+        description="Track your submitted campus concerns, review receiving channels, and follow status updates."
         action={
-          <Link className="button button-primary" href="/report/new">
-            <Plus aria-hidden="true" size={18} />
+          <Link className="button button-primary button-new-report" href="/report/new">
+            <Plus aria-hidden="true" size={18} strokeWidth={2.2} />
             New report
           </Link>
         }
