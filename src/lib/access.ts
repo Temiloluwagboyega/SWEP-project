@@ -5,6 +5,7 @@ export type SessionUser = {
   role: Role;
   name?: string | null;
   email?: string | null;
+  image?: string | null;
 };
 export type FullReport = Prisma.ReportGetPayload<{
   include: {

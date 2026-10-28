@@ -16,7 +16,7 @@ import {
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
 import { ProfileMenu } from "./profile-menu";
-export type Account = { name?: string | null; role: string; email?: string | null } | null;
+export type Account = { name?: string | null; role: string; email?: string | null; image?: string | null } | null;
 // Signed-in portal pages use the sidebar for navigation instead of the public header.
 export function inPortal(path: string, account: Account): boolean {
   return (

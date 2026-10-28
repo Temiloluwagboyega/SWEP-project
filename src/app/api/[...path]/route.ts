@@ -81,6 +81,45 @@ async function route(request: Request, context: Context) {
         }),
       );
     }
+    if (target === "user/avatar") {
+      if (request.method === "POST") {
+        const body = (await readJson(request)) as { image?: unknown };
+        if (typeof body?.image !== "string") {
+          throw new ApiError(400, "Image payload is required.");
+        }
+        const dataUrl = body.image.trim();
+        const match = dataUrl.match(
+          /^data:(image\/(jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/,
+        );
+        if (!match) {
+          throw new ApiError(
+            400,
+            "Invalid image format. Supported formats: JPG, PNG, and WebP.",
+          );
+        }
+        const base64Data = match[3];
+        const approxSizeBytes = Math.round((base64Data.length * 3) / 4);
+        if (approxSizeBytes > 2 * 1024 * 1024) {
+          throw new ApiError(
+            400,
+            "File size exceeds the 2 MB limit. Please select a smaller photo.",
+          );
+        }
+        await db.user.update({
+          where: { id: user.id },
+          data: { image: dataUrl },
+        });
+        return NextResponse.json({ success: true, image: dataUrl });
+      }
+      if (request.method === "DELETE") {
+        await db.user.update({
+          where: { id: user.id },
+          data: { image: null },
+        });
+        return NextResponse.json({ success: true, image: null });
+      }
+      throw new ApiError(405, "Method not allowed.");
+    }
     if (path[0] !== "reports") throw new ApiError(404, "Not found.");
     if (path.length === 1) {
       if (request.method === "GET")
@@ -123,4 +162,9 @@ async function route(request: Request, context: Context) {
 async function securedRoute(request: Request, context: Context) {
   return privateResponse(await route(request, context));
 }
-export { securedRoute as GET, securedRoute as POST, securedRoute as PATCH };
+export {
+  securedRoute as GET,
+  securedRoute as POST,
+  securedRoute as PATCH,
+  securedRoute as DELETE,
+};

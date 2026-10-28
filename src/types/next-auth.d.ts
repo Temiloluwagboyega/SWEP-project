@@ -15,6 +15,7 @@ declare module "next-auth/jwt" {
     role: Role;
     sessionVersion: number;
     sessionId: string;
+    image?: string | null;
   }
 }
 
@@ -24,5 +25,6 @@ declare module "@auth/core/jwt" {
     role: Role;
     sessionVersion: number;
     sessionId: string;
+    image?: string | null;
   }
 }
