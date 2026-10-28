@@ -92,7 +92,24 @@ const plugins = [
   };
   const browserEntry =
     entry +
-    `\nimport {createRoot} from 'react-dom/client';\nwindow.fetch=async(url,options={})=>String(url).startsWith('/api/reports')&&(!options.method||options.method==='GET')?new Response(JSON.stringify(staffReports),{headers:{'Content-Type':'application/json'}}):new Response(JSON.stringify({error:'Design preview only. Start the Next.js app to save or update reports.'}),{status:503,headers:{'Content-Type':'application/json'}});\ncreateRoot(document.getElementById('root')).render(<Preview screen={new URLSearchParams(location.search).get('screen')||'/'}/>);`;
+    `\nimport {createRoot} from 'react-dom/client';\nwindow.fetch=async(url,options={})=>{
+      const s = String(url);
+      if (s.startsWith('/api/reports') && (!options.method || options.method === 'GET')) {
+        return new Response(JSON.stringify(staffReports), { headers: { 'Content-Type': 'application/json' } });
+      }
+      if (s.startsWith('/api/user/avatar')) {
+        if (options.method === 'DELETE') {
+          return new Response(JSON.stringify({ success: true, image: null }), { headers: { 'Content-Type': 'application/json' } });
+        }
+        try {
+          const body = options.body ? JSON.parse(options.body) : {};
+          return new Response(JSON.stringify({ success: true, image: body.image || null }), { headers: { 'Content-Type': 'application/json' } });
+        } catch {
+          return new Response(JSON.stringify({ success: true, image: null }), { headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+      return new Response(JSON.stringify({ error: 'Design preview only. Start the Next.js app to save or update reports.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+    };\ncreateRoot(document.getElementById('root')).render(<Preview screen={new URLSearchParams(location.search).get('screen')||'/'}/>);`;
   const result = await esbuild.build({
     ...common,
     stdin: {
