@@ -107,8 +107,12 @@ export async function listReports(
   return reports.map((report) => serializeReport(user, report));
 }
 export async function getReport(user: SessionUser, key: string) {
-  const report = await find(db, user, key);
-  return serializeReport(user, report);
+  // Prisma can read the report and its relations in separate queries. Keep
+  // status, permissions and history on one snapshot during concurrent updates.
+  return db.$transaction(async (tx) => {
+    const report = await find(tx, user, key);
+    return serializeReport(user, report);
+  }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
 }
 export async function createReport(user: SessionUser, input: unknown) {
   if (user.role !== "STUDENT") denied();

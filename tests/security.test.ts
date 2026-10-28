@@ -378,6 +378,17 @@ async function login(
   );
 }
 
+test("auth GET validates the public Host when Next.js supplies an internal listener URL", async () => {
+  const path = "/api/auth/providers";
+  const forwarded = await authRoute.GET(new NextRequest(`http://internal-listener:9000${path}`, {
+    headers: { host: new URL(origin).host },
+  }));
+  assert.equal(forwarded.status, 200);
+  assert.ok((await forwarded.json()).credentials);
+  const wrong = await authRoute.GET(new NextRequest(origin + path, { headers: { host: "untrusted.example" } }));
+  assert.equal(wrong.status, 400);
+});
+
 test("real Auth.js handlers enforce CSRF, issue private cookies and reject revoked JWT sessions", async () => {
   const c = await csrf();
   const rejected = await login("invalid-csrf", c.cookie);

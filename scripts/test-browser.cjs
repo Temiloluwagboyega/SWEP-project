@@ -63,7 +63,8 @@ async function main() {
     }
     await run(["node_modules/prisma/build/index.js", "migrate", "deploy"], env);
     await run(["--import", "tsx", "prisma/seed.ts"], env);
-    await run(["node_modules/@playwright/test/cli.js", "test"], { ...env, NODE_ENV: "production" });
+    const options = process.argv.slice(2).filter((arg) => arg !== "--skip-build");
+    await run(["node_modules/@playwright/test/cli.js", "test", ...options], { ...env, NODE_ENV: "production" });
     console.log("BROWSER_PASSED");
   } finally {
     try { await db.$executeRawUnsafe(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`); }

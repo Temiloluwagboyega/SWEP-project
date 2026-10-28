@@ -18,7 +18,7 @@ async function makeReport(
     .getByLabel("Incident category")
     .selectOption(confidential ? "ASSAULT" : "PHONE_THEFT");
   await page
-    .getByLabel("Campus location")
+    .getByRole("combobox", { name: /^Campus location/ })
     .selectOption({ label: "Senate Building" });
   const local = new Date(Date.now() - 3600000);
   local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
@@ -36,7 +36,7 @@ async function makeReport(
       page.getByLabel("Keep this report confidential"),
     ).toBeChecked();
     await page.getByLabel("This is happening now").check();
-    await expect(page.getByRole("alert")).toContainText(
+    await expect(page.getByRole("region", { name: "Urgency & privacy" }).getByRole("alert")).toContainText(
       "Don’t wait for the app",
     );
   }
@@ -53,6 +53,8 @@ async function makeReport(
 test("student, committee and security complete the report-and-track loop with privacy enforced", async ({
   browser,
 }) => {
+  // This flow includes a 30-second poll and many online database round trips.
+  test.setTimeout(240000);
   const studentContext = await browser.newContext(),
     committeeContext = await browser.newContext(),
     securityContext = await browser.newContext();
@@ -119,7 +121,9 @@ test("student, committee and security complete the report-and-track loop with pr
       .getByLabel("Public update")
       .fill("Fictional case reviewed and resolved.");
     await security.getByRole("button", { name: "Update status" }).click();
+    await expect(security.locator(".detail-badges .status-badge")).toHaveText("Resolved");
     await student.goto(`/reports/${theft.ref}`);
+    await expect(student.locator(".detail-badges .status-badge")).toHaveText("Resolved");
     await expect(
       student.getByText("Fictional case reviewed and resolved."),
     ).toBeVisible();

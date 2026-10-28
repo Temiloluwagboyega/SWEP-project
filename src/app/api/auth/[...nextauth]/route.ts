@@ -10,7 +10,12 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   try {
-    if (new URL(request.url).origin !== readSecurityConfig().origin)
+    // Next.js may construct request.url with its internal listener origin.
+    // Validate the browser's Host against our configured public host instead;
+    // Auth.js uses AUTH_URL for protocol, cookies and callback destinations.
+    const expectedHost = new URL(readSecurityConfig().origin).host;
+    const host = request.headers.get("host") ?? new URL(request.url).host;
+    if (host.toLowerCase() !== expectedHost.toLowerCase())
       throw new ApiError(400, "Use the configured application address.");
     await consumeLimit("authRead", clientAddress(request.headers));
     return privateResponse(await handlers.GET(request));

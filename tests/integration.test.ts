@@ -349,6 +349,18 @@ test("status transitions, channel assignment, referral boundaries, and terminal 
   );
 });
 
+test("concurrent status changes keep each detail's status and timeline on one snapshot", async () => {
+  const created = await service.createReport(student, body({ channel: "SECURITY" }));
+  const reads = Array.from({ length: 6 }, () => service.getReport(student, created.ref));
+  const update = service.changeStatus(security, created.id, { toStatus: "UNDER_REVIEW" });
+  const snapshots = await Promise.all(reads);
+  await update;
+  for (const report of snapshots) assert.equal(report.events?.at(-1)?.toStatus, report.status);
+  const current = await service.getReport(student, created.ref);
+  assert.equal(current.status, "UNDER_REVIEW");
+  assert.equal(current.events?.at(-1)?.toStatus, current.status);
+});
+
 test("parallel submissions have unique references and one CREATED event each", async () => {
   const created = await Promise.all(
     Array.from({ length: 4 }, () => service.createReport(student, body())),

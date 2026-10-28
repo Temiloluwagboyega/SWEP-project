@@ -10,7 +10,7 @@ async function login(page: Page, email: string) {
 async function form(page: Page, confidential = false) {
   await page.goto("/report/new");
   await page.getByLabel("Incident category").selectOption("PHONE_THEFT");
-  await page.getByLabel("Campus location").selectOption({ label: "Senate Building" });
+  await page.getByRole("combobox", { name: /^Campus location/ }).selectOption({ label: "Senate Building" });
   const date = new Date(Date.now() - 60000);
   date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
   await page.getByLabel("When did it happen?").fill(date.toISOString().slice(0, 16));

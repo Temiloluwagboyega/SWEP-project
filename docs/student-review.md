@@ -43,11 +43,19 @@ Sources were checked on 28 October 2026. These are website-sourced numbers, not 
 
 The app uses the online Neon PostgreSQL connection. The old SQLite file is preserved. `2_incident_coordinates` is additive: three nullable columns and a coordinate integrity constraint; existing reports remain valid.
 
+Production browser checks also exposed authentication rejecting Next.js's internal listener URL. Authentication GET requests now validate the incoming Host against the configured public host, while Auth.js retains the canonical protocol/callback URL and mutation requests retain exact Origin and CSRF checks. A regression test covers internal-listener URLs and rejection of an untrusted Host.
+
+Report detail reads use a repeatable-read transaction so that the status, permission fields and timeline come from the same database snapshot when another staff member updates a case. Concurrent-read integration coverage and the browser's confirmed-resolution check protect this behaviour.
+
+Transactions can wait up to 10 seconds for a pooled connection during concurrent online reads; the transaction execution timeout remains Prisma's default. The concurrent-read test retains six readers plus a status update.
+
 `npm test` disables outgoing email and uses temporary PostgreSQL schemas for lifecycle/security tests. `npm run test:e2e` applies migrations and fictional fixtures in another temporary schema, starts a local web server connected to that online schema, runs Chromium and removes the schema afterwards. Each browser test resets only its own test schema's rate counters. The tests do not seed or delete the application's public-schema reports.
 
 OpenStreetMap's embed is stubbed in the browser test so preview behaviour can be checked independently of the third-party network. Source URLs and real map destinations remain configured in the app. Physical location hardware, live call answering and an external map service outage cannot be guaranteed by these tests.
 
 The current acceptance record is `STUDENT_REVIEW_GATES.md`.
+
+Final verification on 28 October 2026: **32/32 integration, security, email and analytics tests passed; 7/7 production-browser scenarios passed; TypeScript checking and the production build passed. All 6 acceptance gates are met, with 0 unmet and 0 abandoned.** The final browser run covers the full referral-to-resolution workflow, registration with an 8-character password, responsive public pages, CSP/hydration, GPS and its fallback, coordinate removal, all staff roles and confidential map restrictions. Supervisor layouts were also visually reviewed at 390px and 1280px. The ignored `artifacts/student-review-tests.tap` contains the database test transcript.
 
 ## Chapter updates to make
 
