@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProfilePage() {
-  const user = await requireUser("student");
+  const user = await requireUser();
   return (
     <div className="shell page-content">
       <ProfileContent user={user} />

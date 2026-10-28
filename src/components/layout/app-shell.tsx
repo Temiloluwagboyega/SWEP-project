@@ -117,7 +117,15 @@ export function SiteHeader({ account }: { account: Account }) {
           {account ? (
             <>
               <span className="avatar" aria-hidden="true">
-                {account.name?.slice(0, 1) ?? "U"}
+                {account.image ? (
+                  <img
+                    src={account.image}
+                    alt={account.name ?? "Avatar"}
+                    className="portal-avatar-img"
+                  />
+                ) : (
+                  account.name?.slice(0, 1) ?? "U"
+                )}
               </span>
               <span className="account-name">
                 {account.name}
@@ -329,14 +337,22 @@ export function AppShell({
           </div>
           <div className="portal-account">
             <Link
-              href={staff ? "#" : "/profile"}
+              href="/profile"
               className="portal-account-link"
               onClick={() => menu.setOpen(false)}
               aria-current={selected(path, "/profile") ? "page" : undefined}
-              title={staff ? account.name ?? "Account" : "View your student profile"}
+              title="View your profile"
             >
               <span className="avatar" aria-hidden="true">
-                {account.name?.slice(0, 1) ?? "U"}
+                {account.image ? (
+                  <img
+                    src={account.image}
+                    alt={account.name ?? "Avatar"}
+                    className="portal-avatar-img"
+                  />
+                ) : (
+                  account.name?.slice(0, 1) ?? "U"
+                )}
               </span>
               <span className="account-name">
                 <span className="account-display-name">{account.name}</span>

@@ -22,7 +22,7 @@ export default async function RootLayout({
 }) {
   const user = await getSessionUser();
   const account = user
-    ? { name: user.name, role: user.role, email: user.email }
+    ? { name: user.name, role: user.role, email: user.email, image: user.image }
     : null;
   return (
     <html lang="en">

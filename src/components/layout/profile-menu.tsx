@@ -55,7 +55,15 @@ export function ProfileMenu({
         aria-label={`User menu for ${displayName}`}
       >
         <span className="avatar portal-header-avatar" aria-hidden="true">
-          {displayName.slice(0, 1).toUpperCase()}
+          {account.image ? (
+            <img
+              src={account.image}
+              alt={displayName}
+              className="portal-avatar-img"
+            />
+          ) : (
+            displayName.slice(0, 1).toUpperCase()
+          )}
         </span>
         <span className="portal-header-text">
           <span className="portal-header-name">{displayName}</span>
@@ -84,7 +92,15 @@ export function ProfileMenu({
         >
           <div className="portal-dropdown-identity">
             <span className="avatar portal-dropdown-avatar" aria-hidden="true">
-              {displayName.slice(0, 1).toUpperCase()}
+              {account.image ? (
+                <img
+                  src={account.image}
+                  alt={displayName}
+                  className="portal-avatar-img"
+                />
+              ) : (
+                displayName.slice(0, 1).toUpperCase()
+              )}
             </span>
             <div className="portal-dropdown-user-text">
               <strong className="portal-dropdown-name">{displayName}</strong>
@@ -99,7 +115,7 @@ export function ProfileMenu({
 
           <div className="portal-dropdown-links">
             <Link
-              href={staff ? "/staff" : "/profile"}
+              href="/profile"
               role="menuitem"
               className="portal-dropdown-item"
               onClick={() => setOpen(false)}
@@ -109,7 +125,7 @@ export function ProfileMenu({
             </Link>
 
             <Link
-              href={staff ? "/staff" : "/profile#edit"}
+              href="/profile#edit"
               role="menuitem"
               className="portal-dropdown-item"
               onClick={() => setOpen(false)}
@@ -119,7 +135,7 @@ export function ProfileMenu({
             </Link>
 
             <Link
-              href={staff ? "/staff" : "/profile#picture"}
+              href="/profile#picture"
               role="menuitem"
               className="portal-dropdown-item"
               onClick={() => setOpen(false)}
