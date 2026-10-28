@@ -3,19 +3,22 @@
   width: 100%;
   overflow-x: clip;
 }
-.home-hero-wrap {
+.home-hero-wrap,
+.auth-wrapper {
   position: relative;
   width: 100%;
   overflow: hidden;
 }
-.home-hero-bg {
+.home-hero-bg,
+.auth-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
 }
-.home-bg-wave-tl {
+.home-bg-wave-tl,
+.auth-bg-wave-tl {
   position: absolute;
   top: 0;
   left: 0;
@@ -24,31 +27,38 @@
   color: color-mix(in srgb, var(--color-primary) 14%, transparent);
   z-index: 1;
 }
-.home-bg-wave-tl svg {
+.home-bg-wave-tl svg,
+.auth-bg-wave-tl svg {
   width: 100%;
   height: 100%;
   display: block;
 }
-.home-bg-landmark {
+.home-bg-landmark,
+.auth-bg-landmark {
   position: absolute;
-  top: 0;
   left: 0;
   bottom: 0;
-  width: min(740px, 56vw);
-  height: 100%;
+  width: min(520px, 38vw);
+  height: min(650px, 80%);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.40;
-  mask-image: linear-gradient(to right, black 60%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 60%, rgba(0, 0, 0, 0.45) 82%, transparent 100%);
+  opacity: 0.88;
+  mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.45) 45%, transparent 75%),
+              linear-gradient(to right, black 20%, transparent 80%);
+  mask-composite: intersect;
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 0% 100%, black 15%, rgba(0, 0, 0, 0.45) 45%, transparent 75%),
+                      linear-gradient(to right, black 20%, transparent 80%);
+  -webkit-mask-composite: source-in;
 }
-.home-bg-landmark-img {
+.home-bg-landmark-img,
+.auth-bg-landmark-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: left center;
+  object-position: left bottom;
 }
-.home-bg-wave-br {
+.home-bg-wave-br,
+.auth-bg-wave-br {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -57,15 +67,18 @@
   pointer-events: none;
   z-index: 1;
 }
-.home-bg-wave-br svg {
+.home-bg-wave-br svg,
+.auth-bg-wave-br svg {
   width: 100%;
   height: 100%;
   display: block;
 }
-.home-bg-wave-br .wave-layer-back {
+.home-bg-wave-br .wave-layer-back,
+.auth-bg-wave-br .wave-layer-back {
   color: color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
-.home-bg-wave-br .wave-layer-front {
+.home-bg-wave-br .wave-layer-front,
+.auth-bg-wave-br .wave-layer-front {
   color: color-mix(in srgb, var(--color-primary) 68%, var(--color-surface));
 }
 .home-hero,
@@ -457,34 +470,10 @@
   min-height: calc(100vh - 250px);
   position: relative;
 }
-.auth-layout::before {
-  content: "";
-  position: absolute;
-  top: -40px;
-  left: -60px;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 8%, transparent) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
-.auth-layout::after {
-  content: "";
-  position: absolute;
-  bottom: -40px;
-  right: -60px;
-  width: 360px;
-  height: 360px;
-  border-radius: 50%;
-  background: radial-gradient(circle, color-mix(in srgb, var(--color-primary) 7%, transparent) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-}
 .auth-intro,
 .auth-panel {
   position: relative;
-  z-index: 1;
+  z-index: 2;
 }
 .auth-community-badge {
   display: inline-flex;
@@ -1269,22 +1258,25 @@
   }
 }
 @media (max-width: 950px) {
-  .home-bg-landmark {
+  .home-bg-landmark,
+  .auth-bg-landmark {
     width: min(580px, 75vw);
     height: 100%;
     top: 0;
     bottom: 0;
-    opacity: 0.32;
+    opacity: 0.24;
     mask-image: linear-gradient(to right, black 55%, rgba(0, 0, 0, 0.4) 80%, transparent 100%),
                 linear-gradient(to bottom, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to right, black 55%, rgba(0, 0, 0, 0.4) 80%, transparent 100%),
                         linear-gradient(to bottom, black 85%, transparent 100%);
   }
-  .home-bg-wave-tl {
+  .home-bg-wave-tl,
+  .auth-bg-wave-tl {
     width: min(480px, 60vw);
     height: 280px;
   }
-  .home-bg-wave-br {
+  .home-bg-wave-br,
+  .auth-bg-wave-br {
     width: min(480px, 60vw);
     height: 380px;
   }
@@ -1367,20 +1359,23 @@
   }
 }
 @media (max-width: 640px) {
-  .home-bg-landmark {
+  .home-bg-landmark,
+  .auth-bg-landmark {
     width: 100%;
-    height: min(500px, 65vh);
+    height: min(480px, 60vh);
     top: 0;
     bottom: auto;
-    opacity: 0.28;
-    mask-image: linear-gradient(to bottom, black 45%, rgba(0, 0, 0, 0.4) 75%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 45%, rgba(0, 0, 0, 0.4) 75%, transparent 100%);
+    opacity: 0.18;
+    mask-image: linear-gradient(to bottom, black 35%, rgba(0, 0, 0, 0.3) 65%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 35%, rgba(0, 0, 0, 0.3) 65%, transparent 100%);
   }
-  .home-bg-wave-tl {
+  .home-bg-wave-tl,
+  .auth-bg-wave-tl {
     width: 70vw;
     height: 180px;
   }
-  .home-bg-wave-br {
+  .home-bg-wave-br,
+  .auth-bg-wave-br {
     width: 70vw;
     height: 240px;
   }
@@ -1505,10 +1500,6 @@
     grid-template-columns: 1fr;
     padding-block: 28px 36px;
     gap: 32px;
-  }
-  .auth-layout::before,
-  .auth-layout::after {
-    display: none;
   }
   .auth-community-badge {
     margin-bottom: 16px;

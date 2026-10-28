@@ -15,7 +15,56 @@ export function AuthLayout({
   children: ReactNode;
 }) {
   return (
-    <div className="shell auth-layout">
+    <div className="auth-wrapper">
+      <div className="auth-bg" aria-hidden="true">
+        {/* Top-Left Organic Reference Wave */}
+        <div className="auth-bg-wave-tl">
+          <svg
+            viewBox="0 0 700 450"
+            fill="none"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0 0 L0 260 C70 290 160 300 260 230 C360 160 460 80 580 0 Z"
+              fill="currentColor"
+            />
+          </svg>
+        </div>
+
+        {/* Bottom-Left OAU Campus Landmark Photo */}
+        <div className="auth-bg-landmark">
+          <img
+            src="/images/oau-campus.jpg"
+            alt=""
+            aria-hidden="true"
+            className="auth-bg-landmark-img"
+          />
+        </div>
+
+        {/* Bottom-Right Layered Reference Waves */}
+        <div className="auth-bg-wave-br">
+          <svg
+            viewBox="0 0 700 600"
+            fill="none"
+            preserveAspectRatio="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M700 600 L700 180 C580 240 440 380 280 480 C180 540 100 580 0 600 H700 Z"
+              fill="currentColor"
+              className="wave-layer-back"
+            />
+            <path
+              d="M700 600 L700 340 C600 380 480 460 380 520 C300 570 240 590 160 600 H700 Z"
+              fill="currentColor"
+              className="wave-layer-front"
+            />
+          </svg>
+        </div>
+      </div>
+
+      <div className="shell auth-layout">
       <section className="auth-intro">
         <div className="auth-community-badge page-context">
           <ShieldCheck aria-hidden="true" size={17} strokeWidth={2} />
@@ -82,6 +131,7 @@ export function AuthLayout({
         </div>
         {children}
       </section>
+      </div>
     </div>
   );
 }
