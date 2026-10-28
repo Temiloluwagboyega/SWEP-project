@@ -1,0 +1,28 @@
+.coordinate-field { border: 1px solid var(--color-border); border-radius: var(--primitive-radius-medium); padding: 20px; min-width: 0; }
+.coordinate-field legend { font-weight: 600; padding: 0 6px; }
+.coordinate-actions, .queue-view-switch { display: flex; flex-wrap: wrap; gap: 12px; margin: 16px 0; }
+.queue-view-switch { padding: 0 24px; }
+.report-insights { display: grid; gap: 24px; padding: 24px; }
+.report-insights .stats-grid { margin: 0; }
+.insight-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.insight-card { border: 1px solid var(--color-border); border-radius: var(--primitive-radius-medium); padding: 20px; min-width: 0; }
+.insight-card h3 { margin-bottom: 8px; }
+.trend-chart { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; list-style: none; padding: 0; margin-top: 20px; }
+.trend-chart li { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 0.75rem; }
+.trend-value { font-weight: 600; }
+.trend-track { display: flex; align-items: flex-end; width: 100%; max-width: 32px; height: 100px; background: var(--color-subtle); border-radius: 4px; overflow: hidden; }
+.trend-track > span { display: block; width: 100%; background: var(--color-primary); border-radius: 4px; }
+.location-ranking { list-style: none; padding: 0; margin: 12px 0; }
+.location-ranking li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--color-border); }
+.location-ranking small { display: block; color: var(--color-muted); }
+.incident-map-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; margin-top: 20px; }
+.incident-map { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
+.incident-map .location-line { flex-wrap: wrap; }
+.map-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; min-height: 180px; padding: 24px; text-align: center; background: var(--color-subtle); border-radius: var(--primitive-radius-medium); }
+.map-frame { display: block; width: 100%; height: 300px; border: 1px solid var(--color-border); border-radius: var(--primitive-radius-medium); }
+@media (max-width: 760px) {
+  .insight-grid, .incident-map-layout { grid-template-columns: 1fr; }
+  .report-insights { padding: 16px; gap: 16px; }
+  .queue-view-switch { padding: 0 16px; }
+  .coordinate-field, .insight-card { padding: 16px; }
+}

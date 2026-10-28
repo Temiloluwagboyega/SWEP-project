@@ -14,6 +14,7 @@ export function contentSecurityPolicy(
     "style-src-attr 'unsafe-inline'",
     "img-src 'self' data: blob:",
     "font-src 'self'",
+    "frame-src https://www.openstreetmap.org",
     `connect-src 'self'${development ? " ws: wss:" : ""}`,
     "object-src 'none'",
     "base-uri 'self'",

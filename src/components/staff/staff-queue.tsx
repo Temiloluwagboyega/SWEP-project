@@ -10,6 +10,7 @@ import {
 import { useStaffQueue } from "@/hooks/use-staff-queue";
 import { Button } from "@/components/ui/button";
 import { ReportTable } from "./report-table";
+import { ReportInsights } from "./report-insights";
 import type { ReportView } from "@/types/app";
 export function StaffQueue({
   initialReports,
@@ -23,6 +24,7 @@ export function StaffQueue({
   const [urgent, setUrgent] = useState(false);
   const [mine, setMine] = useState(false);
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"queue" | "insights">("queue");
   const {
     reports,
     busy,
@@ -84,6 +86,10 @@ export function StaffQueue({
             <RefreshCw aria-hidden="true" size={17} />
             Refresh
           </Button>
+        </div>
+        <div className="queue-view-switch" role="group" aria-label="Dashboard view">
+          <Button variant={view === "queue" ? "primary" : "outline"} aria-pressed={view === "queue"} onClick={() => setView("queue")}>Report queue</Button>
+          <Button variant={view === "insights" ? "primary" : "outline"} aria-pressed={view === "insights"} onClick={() => setView("insights")}>Insights & map</Button>
         </div>
         <div className="queue-filters">
           <label className="search-field">
@@ -162,7 +168,7 @@ export function StaffQueue({
           </div>
         )}
         <div className="queue-list">
-          {filtered.length ? (
+          {view === "insights" ? <ReportInsights reports={filtered} now={now} /> : filtered.length ? (
             <ReportTable reports={filtered} newRefs={newRefs} now={now} />
           ) : (
             <div className="empty-state">

@@ -144,7 +144,7 @@ export function AuthLayout({
               <Headphones aria-hidden="true" size={20} strokeWidth={2} />
             </span>
             <div>
-              <p>Need urgent help? Go directly to the QRS, Senate Building.</p>
+              <p>Need urgent help? Contact nearby security personnel or call QRS. You can also visit the Senate Building.</p>
               <p>This app is not monitored 24/7.</p>
             </div>
           </div>

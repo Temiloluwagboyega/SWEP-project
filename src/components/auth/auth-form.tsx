@@ -136,9 +136,9 @@ export function AuthForm({ register = false }: { register?: boolean }) {
             type={visible ? "text" : "password"}
             autoComplete={register ? "new-password" : "current-password"}
             placeholder={
-              register ? "At least 15 characters…" : "Enter your password…"
+              register ? "At least 8 characters…" : "Enter your password…"
             }
-            minLength={register ? 15 : 8}
+            minLength={8}
             required
           />
           <button

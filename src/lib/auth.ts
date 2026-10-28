@@ -17,6 +17,9 @@ class RateLimitedSignIn extends CredentialsSignin {
   code = "rate_limited";
 }
 const security = readSecurityConfig();
+// Normalise once at startup so Auth.js uses the same trusted origin as our
+// request checks, including when it came from Vercel or legacy configuration.
+process.env.AUTH_URL = security.origin;
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: security.secret,
   trustHost: true, // Canonical AUTH_URL and route origin checks define the actual trust boundary.

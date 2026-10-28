@@ -102,7 +102,7 @@ export function HomeContent({ isStaff = false }: { isStaff?: boolean }) {
             <MapPin aria-hidden="true" size={20} />
             <div>
               <strong>Prefer to speak to someone?</strong>
-              <p>Visit the QRS at the Senate Building.</p>
+              <p>Approach nearby security personnel or visit QRS at the Senate Building.</p>
             </div>
             <Link href="/contacts" aria-label="Find in-person security help">
               <ArrowUpRight aria-hidden="true" size={21} />

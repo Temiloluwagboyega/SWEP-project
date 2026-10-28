@@ -15,6 +15,7 @@ import { HttpError, reportUrl, request } from "@/lib/http/client";
 import { Button } from "@/components/ui/button";
 import { ErrorSummary } from "@/components/ui/error-summary";
 import type { ReportView } from "@/types/app";
+import { CoordinateField } from "./coordinate-field";
 type Location = { id: string; name: string; area: string };
 export function ReportForm({
   locations,
@@ -56,6 +57,9 @@ export function ReportForm({
     setError("");
     setFields({});
     const form = new FormData(event.currentTarget);
+    const latitude = String(form.get("latitude") ?? "").trim();
+    const longitude = String(form.get("longitude") ?? "").trim();
+    const accuracy = String(form.get("accuracy") ?? "");
     const editable = {
       category,
       description,
@@ -63,6 +67,11 @@ export function ReportForm({
       locationNote: String(form.get("locationNote") ?? ""),
       urgent,
       confidential,
+      coordinates: latitude || longitude ? {
+        latitude: latitude ? Number(latitude) : Number.NaN,
+        longitude: longitude ? Number(longitude) : Number.NaN,
+        accuracy: accuracy ? Number(accuracy) : null,
+      } : null,
     };
     const date = new Date(String(form.get("occurredAt") ?? ""));
     const values = report
@@ -208,6 +217,7 @@ export function ReportForm({
             />
             {fieldError("locationNote")}
           </div>
+          <CoordinateField initial={report?.coordinates} fields={fields} />
           <div className="form-field">
             <label htmlFor="description">
               Describe the incident{" "}
@@ -329,7 +339,7 @@ export function ReportForm({
           <div role="alert" className="notice notice-urgent">
             <Siren aria-hidden="true" size={22} />
             <div>
-              <strong>Don’t wait for the app — call/go to the QRS now.</strong>
+              <strong>Don’t wait for the app — contact nearby security or QRS now.</strong>
               <p>
                 <MapPin aria-hidden="true" size={16} /> Quick Response Squad,
                 Senate Building, OAU.

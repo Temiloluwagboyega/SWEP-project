@@ -32,8 +32,8 @@ export default async function NewReport({
             </span>
             <h3>Before you report</h3>
             <p>
-              For immediate danger, go directly to the QRS at the Senate
-              Building. This app is not monitored 24/7.
+              For immediate danger, contact security personnel near you, call QRS,
+              or visit the Senate Building. This app is not monitored 24/7.
             </p>
             <hr />
             <h4>What happens next?</h4>

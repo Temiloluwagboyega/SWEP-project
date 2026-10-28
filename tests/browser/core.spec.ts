@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "@playwright/test";
+import { test, expect, type Page } from "./fixtures";
 async function login(page: Page, email: string) {
   await page.goto("/login");
   await page.getByLabel("Email address").fill(email);
@@ -18,7 +18,7 @@ async function makeReport(
     .getByLabel("Incident category")
     .selectOption(confidential ? "ASSAULT" : "PHONE_THEFT");
   await page
-    .getByLabel("Campus location")
+    .getByRole("combobox", { name: /^Campus location/ })
     .selectOption({ label: "Senate Building" });
   const local = new Date(Date.now() - 3600000);
   local.setMinutes(local.getMinutes() - local.getTimezoneOffset());
@@ -36,7 +36,7 @@ async function makeReport(
       page.getByLabel("Keep this report confidential"),
     ).toBeChecked();
     await page.getByLabel("This is happening now").check();
-    await expect(page.getByRole("alert")).toContainText(
+    await expect(page.getByRole("region", { name: "Urgency & privacy" }).getByRole("alert")).toContainText(
       "Don’t wait for the app",
     );
   }
@@ -53,6 +53,8 @@ async function makeReport(
 test("student, committee and security complete the report-and-track loop with privacy enforced", async ({
   browser,
 }) => {
+  // This flow includes a 30-second poll and many online database round trips.
+  test.setTimeout(240000);
   const studentContext = await browser.newContext(),
     committeeContext = await browser.newContext(),
     securityContext = await browser.newContext();
@@ -69,7 +71,7 @@ test("student, committee and security complete the report-and-track loop with pr
       timeout: 40000,
     });
     await expect(
-      committee.getByText(theft.ref, { exact: true }).locator(".."),
+      committee.getByRole("row").filter({ hasText: theft.ref }),
     ).toContainText("New");
     const assault = await makeReport(student, "SECURITY", true);
     const denied = await committee.request.get(
@@ -119,7 +121,9 @@ test("student, committee and security complete the report-and-track loop with pr
       .getByLabel("Public update")
       .fill("Fictional case reviewed and resolved.");
     await security.getByRole("button", { name: "Update status" }).click();
+    await expect(security.locator(".detail-badges .status-badge")).toHaveText("Resolved");
     await student.goto(`/reports/${theft.ref}`);
+    await expect(student.locator(".detail-badges .status-badge")).toHaveText("Resolved");
     await expect(
       student.getByText("Fictional case reviewed and resolved."),
     ).toBeVisible();
@@ -159,16 +163,16 @@ test("registration creates a student and form validation blocks empty reports", 
   await page
     .getByLabel("Email address")
     .fill(`browser-${Date.now()}@demo.test`);
-  await page.getByLabel("Password", { exact: true }).fill("DemoBrowser#2026!");
+  await page.getByLabel("Password", { exact: true }).fill("Eight#26");
   await page.getByRole("button", { name: "Create student account" }).click();
   await expect(page).toHaveURL(/\/reports$/);
   await page.goto("/report/new");
   await page.getByRole("button", { name: "Submit report" }).click();
   await expect(
-    page.getByText("Choose an incident category.", { exact: true }),
+    page.locator("#category-error"),
   ).toBeVisible();
   await expect(
-    page.getByText("Add at least 20 characters", { exact: false }),
+    page.locator("#description-error"),
   ).toBeVisible();
   expect((await page.request.get("/api/staff/users")).status()).toBe(404);
   const crossOrigin = await page.request.post("/api/reports", {
@@ -205,8 +209,10 @@ test("public pages and signed-in form fit mobile and desktop without horizontal 
     ),
   ).toBe(true);
   await page.goto("/contacts");
-  await expect(page.locator('a[href^="tel:"]')).toHaveCount(0);
+  for (const number of ["09034592436", "09070367707", "09070367711", "112"])
+    await expect(page.locator(`a[href="tel:${number}"]`).last()).toBeVisible();
   await expect(page.getByText("VERIFY_BEFORE_DEMO")).toHaveCount(0);
+  await expect(page.locator(".notice").getByText("Contact security personnel near you", { exact: false })).toBeVisible();
 });
 
 test("page CSP nonces change between responses and the password control hydrates", async ({

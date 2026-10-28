@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowUpRight, Siren, MapPin } from "lucide-react";
-import { contacts } from "@/config/contacts";
+import { contacts, emergencyGuidance } from "@/config/contacts";
 import { inPortal, type Account } from "./app-shell";
 
 export function EmergencyBanner({ account = null }: { account?: Account }) {
@@ -29,12 +29,12 @@ export function EmergencyBanner({ account = null }: { account?: Account }) {
           <span>
             <strong>In danger now?</strong>{" "}
             <span className="emergency-detail">
-              Go directly to the QRS, Senate Building.
+              Contact security personnel near you or call QRS.
             </span>
           </span>
         </div>
         <div className="emergency-actions">
-          {qrs.verified && qrs.phone !== "VERIFY_BEFORE_DEMO" && (
+          {qrs.phone && (
             <a className="emergency-cta" href={`tel:${qrs.phone}`}>
               Call QRS
             </a>
@@ -55,8 +55,7 @@ export function EmergencyHelp() {
       <div>
         <strong>Need help right now?</strong>
         <p>
-          Don’t wait for an online report. Go directly to the Quick Response
-          Squad.
+          Don’t wait for an online report. {emergencyGuidance}
         </p>
         <p className="location-line">
           <MapPin aria-hidden="true" size={16} />

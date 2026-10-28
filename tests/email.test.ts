@@ -10,6 +10,7 @@ function fixture(
     unconfigured?: boolean;
     mailFails?: boolean;
     lookupFails?: boolean;
+    vercel?: boolean;
   } = {},
 ) {
   const sent: Record<string, unknown>[] = [],
@@ -74,12 +75,24 @@ function fixture(
     SMTP_PASS: process.env.SMTP_PASS,
     SMTP_PORT: process.env.SMTP_PORT,
     AUTH_URL: process.env.AUTH_URL,
+    APP_ENV: process.env.APP_ENV,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    VERCEL: process.env.VERCEL,
+    VERCEL_ENV: process.env.VERCEL_ENV,
+    VERCEL_URL: process.env.VERCEL_URL,
+    VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
   };
   Object.assign(process.env, {
     SMTP_USER: options.unconfigured ? "" : "mailer@fixture.invalid",
     SMTP_PASS: options.unconfigured ? "" : "fictional-smtp-password",
     SMTP_PORT: "587",
-    AUTH_URL: "https://campus.example",
+    AUTH_URL: options.vercel ? "" : "https://campus.example",
+    APP_ENV: "production",
+    NEXTAUTH_URL: "",
+    VERCEL: options.vercel ? "1" : "",
+    VERCEL_ENV: "preview",
+    VERCEL_URL: "preview-build.vercel.app",
+    VERCEL_PROJECT_PRODUCTION_URL: "campus.example",
   });
   try {
     m._compile(source, filename);
@@ -113,6 +126,13 @@ function fixture(
     },
   };
 }
+test("Vercel email links use the deployment origin when AUTH_URL is absent", async () => {
+  const f = fixture({ vercel: true });
+  await f.run(() => f.api.sendReportReceived("student@fixture.invalid", "SCS-2026-000001"));
+  assert.match(String(f.sent[0].html), /https:\/\/preview-build\.vercel\.app\/reports\/SCS-2026-000001/);
+  assert.ok(!String(f.sent[0].html).includes("localhost"));
+});
+
 test("SMTP enforces TLS, disables resource reads and defers private notification payloads", async () => {
   const f = fixture();
   await f.api.sendReportReceived("student@fixture.invalid", "SCS-2026-000001");
