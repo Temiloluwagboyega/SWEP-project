@@ -356,7 +356,9 @@ export function AppShell({
       </aside>
       <div className="portal-content">
         <PortalHeader path={path} account={account} />
-        {children}
+        <div className="portal-main">
+          {children}
+        </div>
       </div>
     </div>
   );

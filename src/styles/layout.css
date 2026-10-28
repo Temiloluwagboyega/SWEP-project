@@ -469,34 +469,41 @@
   width: calc(100% - 260px);
   min-width: 0;
   min-height: 100vh;
-  padding: 24px 32px 56px;
+  padding: 0;
   box-sizing: border-box;
 }
+.portal-main {
+  padding: 28px 32px 56px;
+  min-width: 0;
+}
+.portal-main .shell,
 .portal-content .shell {
   width: 100%;
   max-width: 1360px;
   margin: 0;
 }
+.portal-main .page-content,
 .portal-content .page-content {
-  padding: 4px 0 0;
+  padding: 0;
   min-height: 0;
 }
 /* === Persistent Portal Header === */
 .portal-header {
   position: sticky;
-  top: 16px;
+  top: 0;
   z-index: 25;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  max-width: 1360px;
-  padding: 12px 20px;
+  width: 100%;
+  padding: 14px 32px;
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--primitive-radius-medium);
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px -2px rgba(19, 45, 70, 0.08), 0 1px 3px -1px rgba(19, 45, 70, 0.04);
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  margin: 0;
+  box-shadow: 0 1px 3px rgba(19, 45, 70, 0.05);
 }
 .button-header-new {
   font-size: 0.8125rem;
@@ -915,7 +922,14 @@
   .portal-content {
     margin-left: 240px;
     width: calc(100% - 240px);
-    padding: 20px 24px 48px;
+    padding: 0;
+  }
+  .portal-header {
+    padding: 12px 24px;
+    margin: 0;
+  }
+  .portal-main {
+    padding: 24px 24px 48px;
   }
   .portal-account .account-display-name {
     max-width: 110px;
@@ -1014,7 +1028,20 @@
   .portal-content {
     margin-left: 0;
     width: 100%;
-    padding: 0 16px 40px;
+    padding: 0;
+  }
+  .portal-header {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    padding: 10px 16px;
+    border-radius: 0;
+    border-inline: 0;
+    border-top: 0;
+    margin: 0;
+  }
+  .portal-main {
+    padding: 20px 16px 40px;
   }
   .page-content {
     padding-top: 28px;
@@ -1115,8 +1142,11 @@
   }
   .portal-header {
     padding: 10px 12px;
-    margin-bottom: 16px;
+    margin: 0;
     gap: 10px;
+  }
+  .portal-main {
+    padding: 16px 12px 36px;
   }
   .portal-header-name {
     display: none;

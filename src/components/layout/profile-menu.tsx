@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "next-auth/react";
 import {
+  Camera,
   ChevronDown,
   Edit3,
   LifeBuoy,
@@ -115,6 +116,16 @@ export function ProfileMenu({
             >
               <Edit3 aria-hidden="true" size={15} />
               <span>Edit profile</span>
+            </Link>
+
+            <Link
+              href={staff ? "/staff" : "/profile#picture"}
+              role="menuitem"
+              className="portal-dropdown-item"
+              onClick={() => setOpen(false)}
+            >
+              <Camera aria-hidden="true" size={15} />
+              <span>Change profile picture</span>
             </Link>
 
             <Link

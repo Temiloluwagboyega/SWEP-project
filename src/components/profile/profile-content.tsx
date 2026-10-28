@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   ArrowLeft,
+  Camera,
   CheckCircle2,
   ShieldCheck,
   Building2,
@@ -134,6 +135,26 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
               </div>
             </div>
           </section>
+
+          <div className="profile-notice-box" id="picture" role="region" aria-label="Profile picture management">
+            <div className="profile-notice-header">
+              <Camera aria-hidden="true" size={18} />
+              <h4>Profile picture & avatar management</h4>
+            </div>
+            <p className="profile-notice-text">
+              Custom photo uploads (JPG, PNG, WebP up to 2MB) require backend object storage infrastructure (e.g. S3 / Vercel Blob) and a database migration adding an <code>avatarUrl</code> column to the User model. The portal currently defaults to high-contrast verified initials.
+            </p>
+            <div className="profile-notice-action">
+              <button
+                type="button"
+                className="button button-outline profile-edit-disabled"
+                disabled
+                title="Profile picture upload requires backend object storage and database migration"
+              >
+                Change picture (Requires backend storage)
+              </button>
+            </div>
+          </div>
 
           <div className="profile-notice-box" id="edit" role="region" aria-label="Profile updates notice">
             <div className="profile-notice-header">
