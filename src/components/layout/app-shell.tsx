@@ -6,23 +6,27 @@ import {
   ArrowUpRight,
   ClipboardList,
   FilePlus2,
-  Home,
   LifeBuoy,
   LockKeyhole,
   Menu,
+  Plus,
   ShieldCheck,
   X,
 } from "lucide-react";
 import { Brand } from "./brand";
 import { SignOutButton } from "./sign-out";
-type Account = { name?: string | null; role: string } | null;
+import { ProfileMenu } from "./profile-menu";
+export type Account = { name?: string | null; role: string; email?: string | null; image?: string | null } | null;
 // Signed-in portal pages use the sidebar for navigation instead of the public header.
-function inPortal(path: string, account: Account) {
+export function inPortal(path: string, account: Account): boolean {
   return (
     !!account &&
     (path.startsWith("/reports") ||
       path.startsWith("/report/") ||
-      path.startsWith("/staff"))
+      path.startsWith("/staff") ||
+      path.startsWith("/profile") ||
+      path === "/contacts" ||
+      path.startsWith("/contacts/"))
   );
 }
 function useMenu() {
@@ -39,7 +43,13 @@ function useMenu() {
       }
     };
     document.addEventListener("keydown", escape);
-    return () => document.removeEventListener("keydown", escape);
+    // Prevent background scrolling while the mobile drawer is open
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", escape);
+      document.body.style.overflow = originalOverflow;
+    };
   }, [open]);
   return { path, open, setOpen, toggle };
 }
@@ -75,10 +85,28 @@ function selected(path: string, href: string) {
     ? path === "/"
     : path === href || path.startsWith(`${href}/`);
 }
-export function SiteHeader({ account }: { account: Account }) {
+export function SiteHeader({ account: initialAccount }: { account: Account }) {
+  const [account, setAccount] = useState<Account>(initialAccount);
   const menu = useMenu();
   const { path, open, setOpen } = menu;
   const staff = !!account && account.role !== "STUDENT";
+
+  useEffect(() => {
+    setAccount(initialAccount);
+  }, [initialAccount]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ image: string | null }>;
+      const newImage = customEvent.detail?.image ?? null;
+      setAccount((prev) => (prev ? { ...prev, image: newImage } : prev));
+    };
+    window.addEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    };
+  }, []);
+
   const items = [
     { href: "/", label: "Overview" },
     {
@@ -107,7 +135,15 @@ export function SiteHeader({ account }: { account: Account }) {
           {account ? (
             <>
               <span className="avatar" aria-hidden="true">
-                {account.name?.slice(0, 1) ?? "U"}
+                {account.image ? (
+                  <img
+                    src={account.image}
+                    alt={account.name ?? "Avatar"}
+                    className="portal-avatar-img"
+                  />
+                ) : (
+                  account.name?.slice(0, 1) ?? "U"
+                )}
               </span>
               <span className="account-name">
                 {account.name}
@@ -149,15 +185,103 @@ export function SiteHeader({ account }: { account: Account }) {
     </header>
   );
 }
-export function AppShell({
+
+function getPortalBreadcrumb(path: string, staff: boolean, role?: string) {
+  const portalName = staff
+    ? role === "COMMITTEE"
+      ? "Committee Portal"
+      : "Security Portal"
+    : "Student Portal";
+  const portalRoot = staff ? "/staff" : "/reports";
+
+  let pageLabel = "Dashboard";
+  if (path === "/reports") pageLabel = "My reports";
+  else if (path === "/contacts" || path.startsWith("/contacts/"))
+    pageLabel = "Emergency contacts";
+  else if (path === "/report/new") pageLabel = "New report";
+  else if (path === "/profile") pageLabel = "My profile";
+  else if (path.includes("/edit")) pageLabel = "Edit report";
+  else if (path.startsWith("/reports/")) pageLabel = "Report details";
+  else if (path === "/staff") pageLabel = "Report queue";
+  else if (path.startsWith("/staff/reports/")) pageLabel = "Report review";
+
+  return { portalName, portalRoot, pageLabel };
+}
+
+function PortalHeader({
+  path,
   account,
+}: {
+  path: string;
+  account: NonNullable<Account>;
+}) {
+  const staff = account.role !== "STUDENT";
+  const { portalName, portalRoot, pageLabel } = getPortalBreadcrumb(
+    path,
+    staff,
+    account.role,
+  );
+  const displayName = account.name || (staff ? "Responder" : "Student");
+  const isStudent = account.role === "STUDENT";
+  const showNewReport = isStudent && path !== "/report/new";
+
+  return (
+    <header className="portal-header" aria-label="Portal top bar">
+      <nav className="portal-breadcrumb" aria-label="Breadcrumb">
+        <Link href={portalRoot} className="portal-crumb-root">
+          <ShieldCheck aria-hidden="true" size={16} />
+          <span>{portalName}</span>
+        </Link>
+        <span className="portal-crumb-separator" aria-hidden="true">
+          /
+        </span>
+        <span className="portal-crumb-current" aria-current="page">
+          {pageLabel}
+        </span>
+      </nav>
+      <div className="portal-header-actions">
+        {showNewReport && (
+          <Link
+            className="button button-primary button-header-new"
+            href="/report/new"
+          >
+            <Plus aria-hidden="true" size={16} strokeWidth={2.4} />
+            <span>New report</span>
+          </Link>
+        )}
+        <ProfileMenu account={account} />
+      </div>
+    </header>
+  );
+}
+
+export function AppShell({
+  account: initialAccount,
   children,
 }: {
   account: Account;
   children: ReactNode;
 }) {
+  const [account, setAccount] = useState<Account>(initialAccount);
   const menu = useMenu();
   const { path } = menu;
+
+  useEffect(() => {
+    setAccount(initialAccount);
+  }, [initialAccount]);
+
+  useEffect(() => {
+    const handleAvatarUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<{ image: string | null }>;
+      const newImage = customEvent.detail?.image ?? null;
+      setAccount((prev) => (prev ? { ...prev, image: newImage } : prev));
+    };
+    window.addEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    return () => {
+      window.removeEventListener("campusguard:avatar-updated", handleAvatarUpdated);
+    };
+  }, []);
+
   useEffect(() => {
     const top = document.querySelector(".top-bar");
     if (!top) return;
@@ -187,7 +311,14 @@ export function AppShell({
         { href: "/contacts", label: "Emergency contacts", icon: LifeBuoy },
       ];
   return (
-    <div className="shell portal-shell">
+    <div className="portal-shell">
+      {menu.open && (
+        <div
+          className="portal-backdrop"
+          aria-hidden="true"
+          onClick={() => menu.setOpen(false)}
+        />
+      )}
       <aside className="portal-sidebar" data-open={menu.open || undefined}>
         <div className="portal-bar">
           <Brand inverse />
@@ -199,22 +330,25 @@ export function AppShell({
         </div>
         <div className="portal-panel" id="portal-panel">
           <div className="portal-identity">
-            <ShieldCheck aria-hidden="true" size={23} />
-            <div>
-              <strong>
+            <div className="portal-identity-badge">
+              <span className="portal-status-dot" aria-hidden="true" />
+              <span>
                 {staff
                   ? account.role === "COMMITTEE"
-                    ? "Committee portal"
-                    : account.role === "SUPERVISOR" ? "Supervisor portal" : "Security portal"
-                  : "Student portal"}
-              </strong>
-              <small>
-                {staff
-                  ? "Manage your channel’s reports"
-                  : "Report and follow up"}
-              </small>
+                    ? "Committee Portal"
+                    : account.role === "SUPERVISOR"
+                      ? "Supervisor Portal"
+                      : "Security Portal"
+                  : "Student Portal"}
+              </span>
             </div>
+            <p className="portal-identity-subtitle">
+              {staff
+                ? "Incident triage & response"
+                : "Incident reporting & follow-up"}
+            </p>
           </div>
+          <div className="sidebar-section-label">Navigation</div>
           <nav aria-label="Portal navigation">
             {links.map((item) => (
               <Link
@@ -223,38 +357,63 @@ export function AppShell({
                 onClick={() => menu.setOpen(false)}
                 aria-current={selected(path, item.href) ? "page" : undefined}
               >
-                <item.icon aria-hidden="true" size={19} />
-                {item.label}
+                <item.icon aria-hidden="true" size={18} />
+                <span>{item.label}</span>
               </Link>
             ))}
-            <Link href="/">
-              <Home aria-hidden="true" size={19} />
-              Back to overview
-            </Link>
           </nav>
           <div className="sidebar-note">
-            <LockKeyhole aria-hidden="true" size={19} />
-            <strong>Private by default</strong>
+            <div className="sidebar-note-header">
+              <LockKeyhole aria-hidden="true" size={15} />
+              <strong>Private & secure</strong>
+            </div>
             <p>
               {staff
-                ? "Access is limited to your channel and permitted case details."
-                : "Other students cannot see your reports."}
+                ? "Access is strictly limited to your channel."
+                : "Your reports are private and visible only to authorized responders."}
             </p>
           </div>
           <div className="portal-account">
-            <span className="avatar" aria-hidden="true">
-              {account.name?.slice(0, 1) ?? "U"}
-            </span>
-            <span className="account-name">
-              {account.name}
-              <small>{staff ? "Responder" : "Student"}</small>
-            </span>
+            <Link
+              href="/profile"
+              className="portal-account-link"
+              onClick={() => menu.setOpen(false)}
+              aria-current={selected(path, "/profile") ? "page" : undefined}
+              title="View your profile"
+            >
+              <span className="avatar" aria-hidden="true">
+                {account.image ? (
+                  <img
+                    src={account.image}
+                    alt={account.name ?? "Avatar"}
+                    className="portal-avatar-img"
+                  />
+                ) : (
+                  account.name?.slice(0, 1) ?? "U"
+                )}
+              </span>
+              <span className="account-name">
+                <span className="account-display-name">{account.name}</span>
+                <small className="account-role-label">
+                  {staff
+                    ? account.role === "SUPERVISOR"
+                      ? "Supervisor"
+                      : "Responder"
+                    : "Student · My profile"}
+                </small>
+              </span>
+            </Link>
             <SignOutButton />
           </div>
           <span className="prototype-label">OAU course project</span>
         </div>
       </aside>
-      <div className="portal-content">{children}</div>
+      <div className="portal-content">
+        <PortalHeader path={path} account={account} />
+        <div className="portal-main">
+          {children}
+        </div>
+      </div>
     </div>
   );
 }

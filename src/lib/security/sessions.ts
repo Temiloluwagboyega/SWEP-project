@@ -41,7 +41,7 @@ export async function validateLoginSession(
     where: { id: sessionId },
     include: {
       user: {
-        select: { id: true, role: true, isActive: true, sessionVersion: true },
+        select: { id: true, role: true, isActive: true, sessionVersion: true, image: true },
       },
     },
   });

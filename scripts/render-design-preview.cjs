@@ -15,7 +15,7 @@ const outDir = path.join(root, "artifacts");
 fs.mkdirSync(outDir, { recursive: true });
 const mocks = {
   "next/link": `import React from 'react'; export default function Link({href,children,...props}){return React.createElement('a',{...props,href,onClick:e=>{props.onClick?.(e);if(!e.defaultPrevented&&typeof href==='string'&&href.startsWith('/')){e.preventDefault();window.location.search='?screen='+encodeURIComponent(href)}}},children)}`,
-  "next/navigation": `export function usePathname(){return (typeof window==='undefined' ? globalThis.__previewScreen||'/' : new URLSearchParams(window.location.search).get('screen')||'/').split('?')[0]} export function useRouter(){return {push:p=>{window.location.search='?screen='+encodeURIComponent(p)},refresh:()=>{}}}`,
+  "next/navigation": `export function usePathname(){return (typeof window==='undefined' ? globalThis.__previewScreen||'/' : new URLSearchParams(window.location.search).get('screen')||'/').split('?')[0].split('#')[0]} export function useRouter(){return {push:p=>{window.location.search='?screen='+encodeURIComponent(p)},refresh:()=>{if(typeof window!=='undefined')window.location.reload()}}}`,
   "next-auth/react": `export async function signIn(){return {error:'PreviewOnly'}} export async function signOut(){window.location.search='?screen=%2F'}`,
 };
 const entry = `
@@ -32,23 +32,47 @@ import {ReportDetail} from '@/components/reports/report-detail';
 import {StaffQueue} from '@/components/staff/staff-queue';
 import {StaffActions} from '@/components/staff/staff-actions';
 import {PageHeading} from '@/components/ui/page-heading';
+import {ProfileContent} from '@/components/profile/profile-content';
 import Contacts from '@/app/contacts/page';
 import {locations,reports,redacted,staffReports} from '${path.join(root, "tests/fixtures/design.ts").replaceAll("\\", "/")}';
 export function Preview({screen='/'}){
-  const p=screen.split('?')[0];
-  const staff=p.startsWith('/staff');
-  const publicScreen=['/','/login','/register','/contacts'].includes(p);
-  const account=publicScreen?null:{name:staff?'Demo Security One':'Demo Student One',role:staff?'SECURITY':'STUDENT'};
+  const cleanScreen=(screen||'/').split('?')[0].split('#')[0].replace(/\\/+$/, '')||'/';
+  const staff=cleanScreen.startsWith('/staff');
+  const isPublicMode = typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('mode') === 'public';
+  const publicScreen = isPublicMode || ['/','/login','/register'].includes(cleanScreen);
+
+  const [customAvatar, setCustomAvatar] = typeof window !== 'undefined'
+    ? React.useState(() => {
+        try { return localStorage.getItem('cg_preview_avatar') || null; } catch { return null; }
+      })
+    : [null, () => {}];
+
+  React.useEffect(() => {
+    const handleAvatar = (e) => {
+      const img = e.detail?.image ?? null;
+      setCustomAvatar(img);
+      try {
+        if (img) localStorage.setItem('cg_preview_avatar', img);
+        else localStorage.removeItem('cg_preview_avatar');
+      } catch {}
+    };
+    window.addEventListener('campusguard:avatar-updated', handleAvatar);
+    return () => window.removeEventListener('campusguard:avatar-updated', handleAvatar);
+  }, []);
+
+  const account=publicScreen?null:{name:staff?'Demo Security One':'Demo Student One',role:staff?'SECURITY':'STUDENT',email:staff?'security1@demo.test':'student1@demo.test',image:customAvatar};
   let content;
-  if(p==='/')content=<HomeContent/>;
-  else if(p==='/contacts')content=<Contacts/>;
-  else if(p==='/login'||p==='/register')content=<AuthLayout register={p==='/register'}><AuthForm register={p==='/register'}/></AuthLayout>;
-  else if(p==='/reports')content=<div className="shell page-content"><PageHeading eyebrow="Student portal" title="My reports" description="Your references, receiving channels, and latest updates." action={<a className="button button-primary" href="?screen=%2Freport%2Fnew">New report</a>}/><ReportsList reports={reports}/></div>;
-  else if(p==='/report/new')content=<div className="shell page-content"><PageHeading eyebrow="Student portal" title="Report an incident" description="Tell us what happened and choose who receives it."/><div className="report-layout"><ReportForm locations={locations} initialChannel={screen.includes('COMMITTEE')?'COMMITTEE':'SECURITY'}/><aside className="report-aside"><div className="panel next-panel"><h3>Before you report</h3><p>For immediate danger, go directly to the QRS at the Senate Building. This app is not monitored 24/7.</p></div></aside></div></div>;
-  else if(p==='/staff')content=<div className="shell page-content"><PageHeading eyebrow="Security responder portal" title="Report queue" description="Review, assign, and follow up on reports in your receiving channel."/><StaffQueue initialReports={staffReports} channel="Security"/></div>;
-  else if(staff){const report=p.endsWith('000022')?redacted:{...(staffReports.find(r=>p.endsWith(r.id||r.ref))||reports[0]),reporter:{id:'demo-reporter',name:'Demo Student One',email:'student1@demo.test'}};content=<ReportDetail report={report} staff actions={<StaffActions report={report} users={[{id:'demo-security',name:'Demo Security One'}]} userId="demo-security" committee={false}/>}/>;}
-  else content=<ReportDetail report={reports.find(r=>p.endsWith(r.ref))||reports[0]}/>;
-  return <><div className="preview-notice">Design preview · fictional data · reports are not saved</div><a className="skip-link" href="#main">Skip to content</a><EmergencyBanner/><SiteHeader account={account}/><main id="main"><AppShell account={account}>{content}</AppShell></main><SiteFooter/></>;
+  if(cleanScreen==='/')content=<HomeContent/>;
+  else if(cleanScreen==='/contacts')content=<Contacts/>;
+  else if(cleanScreen==='/login'||cleanScreen==='/register')content=<AuthLayout register={cleanScreen==='/register'}><AuthForm register={cleanScreen==='/register'}/></AuthLayout>;
+  else if(cleanScreen==='/reports')content=<div className="shell page-content"><PageHeading eyebrow="Student portal" title="My reports" description="Track your submitted campus concerns, review receiving channels, and follow status updates." action={<a className="button button-primary button-new-report" href="?screen=%2Freport%2Fnew">+ New report</a>}/><ReportsList reports={reports}/></div>;
+  else if(cleanScreen==='/profile'||cleanScreen.startsWith('/profile'))content=<div className="shell page-content"><ProfileContent user={account||{name:'Demo Student One',email:'student1@demo.test',role:'STUDENT',id:'demo-student-uuid',image:customAvatar}}/></div>;
+  else if(cleanScreen==='/report/new')content=<div className="shell page-content"><PageHeading eyebrow="Student portal" title="Report an incident" description="Tell us what happened and choose who receives it."/><div className="report-layout"><ReportForm locations={locations} initialChannel={screen.includes('COMMITTEE')?'COMMITTEE':'SECURITY'}/><aside className="report-aside"><div className="panel next-panel"><h3>Before you report</h3><p>For immediate danger, go directly to the QRS at the Senate Building. This app is not monitored 24/7.</p></div></aside></div></div>;
+  else if(cleanScreen==='/staff')content=<div className="shell page-content"><PageHeading eyebrow="Security responder portal" title="Report queue" description="Review, assign, and follow up on reports in your receiving channel."/><StaffQueue initialReports={staffReports} channel="Security"/></div>;
+  else if(cleanScreen.startsWith('/staff/reports/')){const report=cleanScreen.endsWith('000022')?redacted:{...(staffReports.find(r=>cleanScreen.endsWith(r.id||r.ref))||staffReports[0]),reporter:{id:'demo-reporter',name:'Demo Student One',email:'student1@demo.test'}};content=<ReportDetail report={report} staff actions={<StaffActions report={report} users={[{id:'demo-security',name:'Demo Security One'}]} userId="demo-security" committee={false}/>}/>;}
+  else if(cleanScreen.startsWith('/reports/')){const report=reports.find(r=>cleanScreen.endsWith(r.ref))||reports[0];content=<ReportDetail report={report}/>;}
+  else content=<div className="shell page-content"><ProfileContent user={account||{name:'Demo Student One',email:'student1@demo.test',role:'STUDENT',id:'demo-student-uuid',image:customAvatar}}/></div>;
+  return <><div className="preview-notice">Design preview · fictional data · reports are not saved</div><a className="skip-link" href="#main">Skip to content</a><EmergencyBanner account={account}/><SiteHeader account={account}/><main id="main"><AppShell account={account}>{content}</AppShell></main><SiteFooter account={account}/></>;
 }
 export {staffReports};
 `;
@@ -89,7 +113,24 @@ const plugins = [
   };
   const browserEntry =
     entry +
-    `\nimport {createRoot} from 'react-dom/client';\nwindow.fetch=async(url,options={})=>String(url).startsWith('/api/reports')&&(!options.method||options.method==='GET')?new Response(JSON.stringify(staffReports),{headers:{'Content-Type':'application/json'}}):new Response(JSON.stringify({error:'Design preview only. Start the Next.js app to save or update reports.'}),{status:503,headers:{'Content-Type':'application/json'}});\ncreateRoot(document.getElementById('root')).render(<Preview screen={new URLSearchParams(location.search).get('screen')||'/'}/>);`;
+    `\nimport {createRoot} from 'react-dom/client';\nwindow.fetch=async(url,options={})=>{
+      const s = String(url);
+      if (s.startsWith('/api/reports') && (!options.method || options.method === 'GET')) {
+        return new Response(JSON.stringify(staffReports), { headers: { 'Content-Type': 'application/json' } });
+      }
+      if (s.startsWith('/api/user/avatar')) {
+        if (options.method === 'DELETE') {
+          return new Response(JSON.stringify({ success: true, image: null }), { headers: { 'Content-Type': 'application/json' } });
+        }
+        try {
+          const body = options.body ? JSON.parse(options.body) : {};
+          return new Response(JSON.stringify({ success: true, image: body.image || null }), { headers: { 'Content-Type': 'application/json' } });
+        } catch {
+          return new Response(JSON.stringify({ success: true, image: null }), { headers: { 'Content-Type': 'application/json' } });
+        }
+      }
+      return new Response(JSON.stringify({ error: 'Design preview only. Start the Next.js app to save or update reports.' }), { status: 503, headers: { 'Content-Type': 'application/json' } });
+    };\ncreateRoot(document.getElementById('root')).render(<Preview screen={new URLSearchParams(location.search).get('screen')||'/'}/>);`;
   const result = await esbuild.build({
     ...common,
     stdin: {
@@ -147,6 +188,7 @@ const plugins = [
     "/contacts",
     "/login",
     "/register",
+    "/profile",
     "/reports",
     "/report/new",
     "/staff",

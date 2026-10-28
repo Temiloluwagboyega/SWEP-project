@@ -77,6 +77,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           role: user.role,
           sessionVersion: user.sessionVersion,
+          image: user.image,
         };
       },
     }),
@@ -89,6 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
         token.sessionVersion = user.sessionVersion;
         token.sessionId = session.id;
+        token.image = user.image ?? null;
         return token;
       }
       if (
@@ -104,11 +106,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       );
       if (!account) return null;
       token.role = account.role;
+      token.image = account.image ?? null;
       return token;
     },
     session({ session, token }) {
       session.user.id = token.id;
       session.user.role = token.role;
+      session.user.image = token.image ?? null;
       return session;
     },
     redirect({ url }) {
@@ -136,8 +140,8 @@ export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   if (!session?.user?.id) return null;
   const user = await db.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true, email: true, isActive: true },
+    select: { id: true, role: true, name: true, email: true, isActive: true, image: true },
   });
   if (!user?.isActive) return null;
-  return { id: user.id, role: user.role, name: user.name, email: user.email };
+  return { id: user.id, role: user.role, name: user.name, email: user.email, image: user.image };
 });

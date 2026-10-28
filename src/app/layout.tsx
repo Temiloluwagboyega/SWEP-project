@@ -21,7 +21,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const user = await getSessionUser();
-  const account = user ? { name: user.name, role: user.role } : null;
+  const account = user
+    ? { name: user.name, role: user.role, email: user.email, image: user.image }
+    : null;
   return (
     <html lang="en">
       <body>
@@ -29,13 +31,13 @@ export default async function RootLayout({
           Skip to content
         </a>
         <div className="top-bar">
-          <EmergencyBanner />
+          <EmergencyBanner account={account} />
           <SiteHeader account={account} />
         </div>
         <main id="main">
           <AppShell account={account}>{children}</AppShell>
         </main>
-        <SiteFooter />
+        <SiteFooter account={account} />
       </body>
     </html>
   );
