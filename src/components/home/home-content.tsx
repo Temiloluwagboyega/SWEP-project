@@ -15,8 +15,57 @@ import { TextLink } from "@/components/ui/text-link";
 import { EmergencyHelp } from "@/components/layout/emergency-banner";
 export function HomeContent({ isStaff = false }: { isStaff?: boolean }) {
   return (
-    <div className="shell home">
-      <section className="home-hero">
+    <div className="home-wrapper">
+      <section className="home-hero-wrap">
+        <div className="home-hero-bg" aria-hidden="true">
+          {/* Top-Left Organic Reference Wave */}
+          <div className="home-bg-wave-tl">
+            <svg
+              viewBox="0 0 700 450"
+              fill="none"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M0 0 L0 260 C70 290 160 300 260 230 C360 160 460 80 580 0 Z"
+                fill="currentColor"
+              />
+            </svg>
+          </div>
+
+          {/* Bottom-Left OAU Campus Landmark Photo */}
+          <div className="home-bg-landmark">
+            <img
+              src="/images/oau-campus.jpg"
+              alt=""
+              aria-hidden="true"
+              className="home-bg-landmark-img"
+            />
+          </div>
+
+          {/* Bottom-Right Layered Reference Waves */}
+          <div className="home-bg-wave-br">
+            <svg
+              viewBox="0 0 700 600"
+              fill="none"
+              preserveAspectRatio="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M700 600 L700 180 C580 240 440 380 280 480 C180 540 100 580 0 600 H700 Z"
+                fill="currentColor"
+                className="wave-layer-back"
+              />
+              <path
+                d="M700 600 L700 340 C600 380 480 460 380 520 C300 570 240 590 160 600 H700 Z"
+                fill="currentColor"
+                className="wave-layer-front"
+              />
+            </svg>
+          </div>
+        </div>
+
+        <div className="shell home-hero">
         <div className="hero-copy">
           <p className="institution-line">
             <span className="institution-mark" aria-hidden="true">
@@ -109,7 +158,10 @@ export function HomeContent({ isStaff = false }: { isStaff?: boolean }) {
             needed.
           </p>
         </Panel>
+        </div>
       </section>
+
+      <div className="shell home-sections">
       <section className="home-emergency">
         <EmergencyHelp />
         <p>
@@ -169,6 +221,7 @@ export function HomeContent({ isStaff = false }: { isStaff?: boolean }) {
           <ArrowRight aria-hidden="true" size={18} />
         </ButtonLink>
       </section>
+      </div>
     </div>
   );
 }

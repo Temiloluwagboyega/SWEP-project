@@ -14,14 +14,14 @@
   animation: emergency-in var(--motion-normal) ease-out;
 }
 .emergency-inner {
-  min-height: 56px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 16px;
   font-size: 0.875rem;
-  padding-block: 6px;
+  padding-block: 4px;
 }
 .emergency-inner > div:first-child {
   display: flex;
@@ -60,8 +60,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 44px;
-  padding: 6px 14px;
+  min-height: 38px;
+  padding: 6px 16px;
   border-radius: 999px;
   background: var(--color-surface);
   color: var(--color-danger);
@@ -101,7 +101,7 @@
   border-bottom: 1px solid var(--color-border);
 }
 .nav-inner {
-  min-height: 88px;
+  min-height: 76px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -110,29 +110,29 @@
 .brand {
   display: inline-flex;
   align-items: center;
-  gap: 11px;
+  gap: 12px;
   flex-shrink: 0;
 }
 .brand-icon {
-  width: 46px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
   background: var(--color-nav);
   color: var(--color-on-nav);
-  border-radius: 12px 12px 18px 18px;
+  border-radius: 12px;
 }
 .brand-name {
   display: block;
-  font-size: 1.4rem;
-  letter-spacing: -0.04em;
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
   font-weight: 750;
   line-height: 1.2;
 }
 .brand small {
   display: block;
   font-size: 0.75rem;
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--color-muted);
 }
 .brand-inverse {
@@ -143,7 +143,7 @@
 }
 .desktop-nav {
   display: flex;
-  gap: 28px;
+  gap: 32px;
   align-self: stretch;
   align-items: stretch;
 }
@@ -152,7 +152,7 @@
   align-items: center;
   min-height: 44px;
   position: relative;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   color: var(--color-muted);
   font-weight: 600;
 }
@@ -378,12 +378,12 @@
 .site-footer {
   background: var(--color-surface);
   border-top: 1px solid var(--color-border);
-  padding-block: 28px;
+  padding-block: 24px;
 }
 .footer-inner {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 24px;
 }
 .footer-brand {

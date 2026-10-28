@@ -146,13 +146,16 @@
   gap: 10px;
 }
 .error-summary > svg {
-  margin-top: 3px;
+  margin-top: 2px;
+  flex-shrink: 0;
 }
 .error-summary h2 {
   font-size: 1rem;
-  font-weight: 650;
+  font-weight: 600;
   letter-spacing: 0;
-  line-height: 1.6;
+  line-height: 1.5;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 .error-summary ul {
   margin: 8px 0 0;
@@ -242,16 +245,44 @@ input[type="radio"] {
   color: var(--color-muted);
   font-weight: 400;
 }
+.input-with-icon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.input-with-icon .field-icon-left {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--primitive-color-control-line);
+  pointer-events: none;
+  z-index: 1;
+}
+.input-with-icon input {
+  padding-left: 42px !important;
+  width: 100%;
+}
 .password-field {
   position: relative;
 }
 .password-field input {
   padding-right: 54px !important;
 }
+.input-with-icon.password-field input {
+  padding-left: 42px !important;
+  padding-right: 48px !important;
+}
 .password-field .icon-button {
   position: absolute;
   right: 4px;
-  top: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-muted);
+}
+.password-field .icon-button:hover {
+  color: var(--color-foreground);
 }
 .form-two-col {
   display: grid;
