@@ -139,6 +139,8 @@ export function SiteHeader({ account: initialAccount }: { account: Account }) {
                   <img
                     src={account.image}
                     alt={account.name ?? "Avatar"}
+                    width={40}
+                    height={40}
                     className="portal-avatar-img"
                   />
                 ) : (
@@ -386,6 +388,8 @@ export function AppShell({
                   <img
                     src={account.image}
                     alt={account.name ?? "Avatar"}
+                    width={40}
+                    height={40}
                     className="portal-avatar-img"
                   />
                 ) : (

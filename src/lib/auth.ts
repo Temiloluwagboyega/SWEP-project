@@ -65,12 +65,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             "$2b$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy",
         );
         if (!user || !valid || !user.isActive) return null;
-        if (
-          security.production &&
-          (user.email.endsWith("@demo.test") ||
-            parsed.data.password === "Demo#2026")
-        )
-          return null;
+        // Fixture accounts are excluded from hosted deployments. Registration
+        // rejects demo details, but older non-fixture accounts may still have
+        // chosen the shared demo password before that rule existed.
+        if (security.production && user.email.endsWith("@demo.test")) return null;
         return {
           id: user.id,
           name: user.name,
@@ -110,9 +108,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      session.user.id = token.id;
-      session.user.role = token.role;
-      session.user.image = token.image ?? null;
+      session.user.id = token.id as string;
+      session.user.role = token.role as typeof session.user.role;
+      session.user.image = (token.image as string | null | undefined) ?? null;
       return session;
     },
     redirect({ url }) {

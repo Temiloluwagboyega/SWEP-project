@@ -36,9 +36,11 @@ export function HomeContent({ isStaff = false }: { isStaff?: boolean }) {
           {/* Bottom-Left OAU Campus Landmark Photo */}
           <div className="home-bg-landmark">
             <img
-              src="/images/oau-campus.jpg"
+              src="/images/oau-campus.png"
               alt=""
               aria-hidden="true"
+              width={500}
+              height={281}
               className="home-bg-landmark-img"
             />
           </div>

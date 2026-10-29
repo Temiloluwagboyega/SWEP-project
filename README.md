@@ -91,7 +91,7 @@ For the logged Vercel `AUTH_URL` build failure and Production/Preview URL setup,
 | `AUTH_SECRET`     | Unique random secret; required for secure sessions.                                                                    |
 | `AUTH_URL`        | Canonical application origin, locally `http://localhost:3000`.                                                         |
 | `APP_ENV` | `local` for the localhost demo; `production` requires public HTTPS. |
-| `TRUSTED_CLIENT_IP_HEADER` | Optional single-IP header overwritten by a trusted reverse proxy. Leave empty locally. |
+| `TRUSTED_CLIENT_IP_HEADER` | Optional single-IP header overwritten by a trusted reverse proxy. Vercel uses its own forwarded IP header automatically; leave empty locally. |
 
 Do not log secrets, session contents, incident descriptions, or database error payloads. Optional email notifications use SMTP (`SMTP_USER`, `SMTP_PASS`, optional `SMTP_HOST`, `SMTP_PORT`, `EMAIL_FROM`); emails contain only the reference, status and a sign-in link, never incident details.
 

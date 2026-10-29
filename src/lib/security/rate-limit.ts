@@ -15,8 +15,11 @@ export const limits = {
   unauthenticated: { count: 60, window: 60_000 },
 } as const;
 export function clientAddress(headers: Headers): string {
-  const header = readSecurityConfig().trustedIpHeader;
-  // An arbitrary x-forwarded-for is not an authenticated client address.
+  const header =
+    readSecurityConfig().trustedIpHeader ||
+    (process.env.VERCEL === "1" ? "x-forwarded-for" : undefined);
+  // Vercel overwrites X-Forwarded-For; elsewhere only an explicitly configured
+  // header from a trusted proxy may identify a client.
   if (!header) return "unverified-client";
   const value = headers.get(header)?.trim() ?? "";
   return isIP(value) ? value : "unverified-client";

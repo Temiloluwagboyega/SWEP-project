@@ -624,7 +624,7 @@ input[type="radio"] {
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 .tabs button:hover,
 .tabs .tab-btn:hover {
@@ -692,7 +692,7 @@ input[type="radio"] {
   color: var(--color-foreground);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.search-field input:focus {
+.search-field input:focus-visible {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-subtle);
@@ -733,7 +733,7 @@ input[type="radio"] {
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
-.category-filter-wrap select:focus {
+.category-filter-wrap select:focus-visible {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px var(--color-primary-subtle);
@@ -751,7 +751,7 @@ input[type="radio"] {
   background: var(--color-background);
   border: 1px solid var(--color-border);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 .button-reset-filters:hover {
   color: var(--color-danger);

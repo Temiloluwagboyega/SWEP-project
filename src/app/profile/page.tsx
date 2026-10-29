@@ -5,7 +5,7 @@ import { ProfileContent } from "@/components/profile/profile-content";
 export const metadata: Metadata = {
   title: "My profile",
   description:
-    "View your verified university credentials, reporting role, and account safety information.",
+    "View your account details, reporting role, and account safety information.",
 };
 
 export default async function ProfilePage() {

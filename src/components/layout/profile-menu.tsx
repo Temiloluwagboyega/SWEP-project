@@ -59,6 +59,8 @@ export function ProfileMenu({
             <img
               src={account.image}
               alt={displayName}
+              width={28}
+              height={28}
               className="portal-avatar-img"
             />
           ) : (
@@ -88,7 +90,7 @@ export function ProfileMenu({
         <div
           className="portal-profile-dropdown"
           role="menu"
-          aria-label="Student profile menu"
+          aria-label={`${staff ? "Responder" : "Student"} profile menu`}
         >
           <div className="portal-dropdown-identity">
             <span className="avatar portal-dropdown-avatar" aria-hidden="true">
@@ -96,6 +98,8 @@ export function ProfileMenu({
                 <img
                   src={account.image}
                   alt={displayName}
+                  width={38}
+                  height={38}
                   className="portal-avatar-img"
                 />
               ) : (
@@ -106,7 +110,7 @@ export function ProfileMenu({
               <strong className="portal-dropdown-name">{displayName}</strong>
               <span className="portal-dropdown-email">{displayEmail}</span>
               <span className="portal-dropdown-badge">
-                {staff ? "Authorized Responder" : "Verified Student"}
+                {staff ? "Responder account" : "Student account"}
               </span>
             </div>
           </div>
@@ -132,7 +136,7 @@ export function ProfileMenu({
               onClick={() => setOpen(false)}
             >
               <Edit3 aria-hidden="true" size={15} />
-              <span>Edit profile</span>
+              <span>Account update information</span>
             </Link>
 
             <Link

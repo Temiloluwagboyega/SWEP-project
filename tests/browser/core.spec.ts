@@ -158,14 +158,35 @@ test("student, committee and security complete the report-and-track loop with pr
 test("registration creates a student and form validation blocks empty reports", async ({
   page,
 }) => {
+  const email = `browser-${Date.now()}@demo.test`;
   await page.goto("/register");
   await page.getByLabel("Full name").fill("Fictional Browser Student");
-  await page
-    .getByLabel("Email address")
-    .fill(`browser-${Date.now()}@demo.test`);
+  await page.getByLabel("Email address").fill(email);
   await page.getByLabel("Password", { exact: true }).fill("Eight#26");
   await page.getByRole("button", { name: "Create student account" }).click();
   await expect(page).toHaveURL(/\/reports$/);
+  await page.getByRole("button", { name: "Sign out" }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.goto("/login");
+  await page.getByLabel("Email address").fill(email);
+  await page.getByLabel("Password", { exact: true }).fill("wrongpass");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page.locator(".error-summary")).toContainText("Email or password is incorrect");
+  await page.getByLabel("Password", { exact: true }).fill("Eight#26");
+  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/reports$/);
+  const tinyPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");
+  const photo = `data:image/png;base64,${Buffer.concat([tinyPng, Buffer.alloc(20_000)]).toString("base64")}`;
+  const upload = await page.request.post("/api/user/avatar", {
+    headers: { origin: new URL(page.url()).origin },
+    data: { image: photo },
+  });
+  expect(upload.status()).toBe(200);
+  expect((await upload.json()).image).toBe(photo);
+  const remove = await page.request.delete("/api/user/avatar", {
+    headers: { origin: new URL(page.url()).origin },
+  });
+  expect(remove.status()).toBe(200);
   await page.goto("/report/new");
   await page.getByRole("button", { name: "Submit report" }).click();
   await expect(

@@ -127,6 +127,8 @@ test("body readers enforce actual streamed bytes, content type and UTF-8", async
     readJson(json("x".repeat(17000), { "content-length": "1" })),
     413,
   );
+  const avatarSized = JSON.stringify({ image: "A".repeat(24_000) });
+  assert.equal((await readJson(json(avatarSized), 3 * 1024 * 1024) as { image: string }).image.length, 24_000);
   await status(boundedText(json("{}", { "content-length": "99999" }), 8), 413);
   const stream = new ReadableStream<Uint8Array>({
     start(c) {
@@ -178,6 +180,23 @@ test("IP headers are ignored unless explicitly configured behind a trusted proxy
   assert.equal(limiter.clientAddress(headers), "198.51.100.2");
   headers.set("x-client-ip", "198.51.100.2, 198.51.100.3");
   assert.equal(limiter.clientAddress(headers), "unverified-client");
+  delete process.env.TRUSTED_CLIENT_IP_HEADER;
+  const oldOrigin = process.env.AUTH_URL;
+  const oldAppEnv = process.env.APP_ENV;
+  process.env.VERCEL = "1";
+  process.env.AUTH_URL = "https://campus.example";
+  process.env.APP_ENV = "production";
+  try {
+    assert.equal(limiter.clientAddress(headers), "198.51.100.1");
+    headers.set("x-forwarded-for", "198.51.100.1, 198.51.100.2");
+    assert.equal(limiter.clientAddress(headers), "unverified-client");
+  } finally {
+    delete process.env.VERCEL;
+    if (oldOrigin === undefined) delete process.env.AUTH_URL;
+    else process.env.AUTH_URL = oldOrigin;
+    if (oldAppEnv === undefined) delete process.env.APP_ENV;
+    else process.env.APP_ENV = oldAppEnv;
+  }
 });
 
 test("persistent rate limits reject excess requests, conceal identities and reset at expiry", async () => {
@@ -577,4 +596,44 @@ test("registration handler hashes passwords, denies role injection and limits at
     }),
     0,
   );
+});
+
+test("production registration rejects demo details before creating an unusable account", async () => {
+  const previousOrigin = process.env.AUTH_URL;
+  const previousAppEnv = process.env.APP_ENV;
+  process.env.AUTH_URL = "https://campus.example";
+  process.env.APP_ENV = "production";
+  try {
+    const route = await import("../src/app/api/[...path]/route");
+    const submit = (emailAddress: string, submittedPassword: string) =>
+      route.POST(
+        new Request("https://campus.example/api/register", {
+          method: "POST",
+          headers: {
+            origin: "https://campus.example",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "Fictional Registration",
+            email: emailAddress,
+            password: submittedPassword,
+          }),
+        }),
+        { params: Promise.resolve({ path: ["register"] }) },
+      );
+    const demoEmail = "new-user@demo.test";
+    const realEmail = "new-user@example.test";
+    const blockedEmail = await submit(demoEmail, password);
+    assert.equal(blockedEmail.status, 400);
+    assert.match((await blockedEmail.json()).error, /real email address/);
+    const blockedPassword = await submit(realEmail, "Demo#2026");
+    assert.equal(blockedPassword.status, 400);
+    assert.match((await blockedPassword.json()).error, /different password/);
+    assert.equal(await db.user.count({ where: { email: { in: [demoEmail, realEmail] } } }), 0);
+  } finally {
+    if (previousOrigin === undefined) delete process.env.AUTH_URL;
+    else process.env.AUTH_URL = previousOrigin;
+    if (previousAppEnv === undefined) delete process.env.APP_ENV;
+    else process.env.APP_ENV = previousAppEnv;
+  }
 });

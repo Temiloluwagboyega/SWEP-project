@@ -50,13 +50,16 @@ export function AuthForm({ register = false }: { register?: boolean }) {
         password: parsed.data.password,
         redirect: false,
       });
-      if (result?.error) {
+      if (!result || result.error) {
         setError(
-          result.code === "rate_limited"
+          result?.code === "rate_limited"
             ? "Too many sign-in attempts. Please wait 15 minutes and try again."
             : register
               ? "Account created. Please sign in to continue."
-              : "Email or password is incorrect. Check your details and try again.",
+              : result?.error === "CredentialsSignin" &&
+                  (!result.code || result.code === "credentials")
+                ? "Email or password is incorrect. Check your details and try again."
+                : "Sign-in is temporarily unavailable. Please try again shortly.",
         );
         return;
       }

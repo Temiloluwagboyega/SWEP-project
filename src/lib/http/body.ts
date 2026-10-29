@@ -36,11 +36,11 @@ export async function boundedText(
     throw new ApiError(400, "Request must contain valid UTF-8 text.");
   }
 }
-export async function readJson(request: Request) {
+export async function readJson(request: Request, maximum = 16 * 1024) {
   if (
     request.headers.get("content-type")?.split(";")[0].trim().toLowerCase() !==
     "application/json"
   )
     throw new ApiError(415, "Send JSON using application/json.");
-  return JSON.parse(await boundedText(request, 16 * 1024)) as unknown;
+  return JSON.parse(await boundedText(request, maximum)) as unknown;
 }

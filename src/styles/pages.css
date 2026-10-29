@@ -1112,7 +1112,7 @@
   color: var(--color-muted);
   background: var(--color-background);
   border: 1px solid var(--color-border);
-  transition: all 0.18s ease;
+  transition: color 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
 }
 .report-list-card:hover .card-arrow {
   color: var(--color-primary);

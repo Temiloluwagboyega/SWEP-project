@@ -58,7 +58,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
 
   const displayName = user.name?.trim() || "User Account";
   const displayEmail = user.email?.trim() || "No email on record";
-  const displayId = user.id ? `${user.id.slice(0, 14)}...` : "Active session";
+  const displayId = user.id ? `${user.id.slice(0, 14)}…` : "Active session";
 
   const staff = user.role !== "STUDENT";
   const roleLabel =
@@ -76,7 +76,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
         ? "Committee Responder"
         : user.role === "SECURITY"
           ? "Security Responder"
-          : "Verified Student";
+          : "Student account";
   const roleHint = staff
     ? "Authorized campus incident responder & follow-up"
     : "Authorized to submit reports & track personal incidents";
@@ -205,7 +205,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
       <PageHeading
         eyebrow={staff ? "Responder portal" : "Student portal"}
         title="My profile"
-        description="Verified university credentials, reporting role, and account safety information."
+        description="Your account details, reporting role, and account safety information."
         action={
           staff ? (
             <Link className="button button-outline" href="/staff">
@@ -229,6 +229,8 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                 <img
                   src={preview || currentImage!}
                   alt={displayName}
+                  width={72}
+                  height={72}
                   className="profile-avatar-img"
                 />
               ) : (
@@ -244,7 +246,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                 </span>
                 <span className="profile-verified-tag">
                   <CheckCircle2 aria-hidden="true" size={14} />
-                  Active university account
+                  Active account
                 </span>
               </div>
             </div>
@@ -264,18 +266,18 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                 </span>
                 <span className="profile-field-value">{displayName}</span>
                 <span className="profile-field-hint">
-                  Synchronized with university registration
+                  Entered when this account was created
                 </span>
               </div>
 
               <div className="profile-field">
                 <span className="profile-field-label">
                   <Mail aria-hidden="true" size={15} />
-                  Institutional email
+                  Email address
                 </span>
                 <span className="profile-field-value">{displayEmail}</span>
                 <span className="profile-field-hint">
-                  Official OAU communication channel
+                  Email verification is not available yet
                 </span>
               </div>
 
@@ -310,7 +312,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                   {displayId}
                 </span>
                 <span className="profile-field-hint">
-                  Unique cryptographic audit identifier
+                  Unique account identifier
                 </span>
               </div>
             </div>
@@ -357,7 +359,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
             {preview ? (
               <div className="profile-preview-card">
                 <div className="profile-preview-thumb">
-                  <img src={preview} alt="Selected preview" />
+                  <img src={preview} alt="Selected preview" width={56} height={56} />
                 </div>
                 <div className="profile-preview-details">
                   <strong>Previewing selected picture</strong>
@@ -370,7 +372,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                       disabled={loading}
                     >
                       <UploadCloud aria-hidden="true" size={15} />
-                      {loading ? "Saving..." : "Save picture"}
+                      {loading ? "Saving…" : "Save picture"}
                     </button>
                     <button
                       type="button"
@@ -403,7 +405,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
                     disabled={loading}
                   >
                     <Trash2 aria-hidden="true" size={15} />
-                    {loading ? "Removing..." : "Remove photo"}
+                    {loading ? "Removing…" : "Remove photo"}
                   </button>
                 )}
               </div>
@@ -421,7 +423,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
               <h4>Account modifications & self-service updates</h4>
             </div>
             <p className="profile-notice-text">
-              Direct modification of full name and institutional email is managed via OAU Registry synchronization. Contact the Division of Student Affairs or Campus Security ICT administration for official credential corrections.
+              Name and email changes are not available in this app yet. Contact the project team if your account details need correcting.
             </p>
           </div>
 
@@ -435,7 +437,7 @@ export function ProfileContent({ user }: { user: ProfileUser }) {
               <h4>Confidentiality & reporting privacy</h4>
             </div>
             <p className="profile-safety-text">
-              All incident reports submitted from your account are strictly confidential. Only authorized university responders assigned to your report channel (Campus Security or Student Affairs Committee) have access to case details. Your personal information is never disclosed publicly.
+              Reports are visible to you and staff in the channel you select. If you mark a report confidential, its details are restricted to its handler and permitted security supervisors. Reports are not published publicly.
             </p>
           </div>
 

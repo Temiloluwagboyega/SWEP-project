@@ -11,6 +11,7 @@ import { clientAddress, consumeLimit } from "@/lib/security/rate-limit";
 import { privateResponse } from "@/lib/http/response";
 import { registerSchema } from "@/lib/validation";
 import { sendWelcome } from "@/lib/email";
+import { readSecurityConfig } from "@/lib/security/config";
 import {
   listReports,
   getReport,
@@ -37,6 +38,12 @@ async function route(request: Request, context: Context) {
     if (request.method === "POST" && target === "register") {
       await consumeLimit("register", clientAddress(request.headers));
       const data = registerSchema.parse(await readJson(request));
+      if (readSecurityConfig().production) {
+        if (data.email.endsWith("@demo.test"))
+          throw new ApiError(400, "Use a real email address for this account.");
+        if (data.password === "Demo#2026")
+          throw new ApiError(400, "Choose a different password for this account.");
+      }
       if (await db.user.findUnique({ where: { email: data.email } }))
         throw new ApiError(
           400,
@@ -83,7 +90,8 @@ async function route(request: Request, context: Context) {
     }
     if (target === "user/avatar") {
       if (request.method === "POST") {
-        const body = (await readJson(request)) as { image?: unknown };
+        // A 2 MB image expands to about 2.8 MB when base64 encoded in JSON.
+        const body = (await readJson(request, 3 * 1024 * 1024)) as { image?: unknown };
         if (typeof body?.image !== "string") {
           throw new ApiError(400, "Image payload is required.");
         }
